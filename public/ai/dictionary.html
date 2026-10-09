@@ -1,0 +1,628 @@
+<title>Tathkarah · AI Dictionary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --ground: #F7F5F0; --panel: #FFFDF7; --ink: #1B1E24; --ink-soft: #3C414C;
+    --muted: #74788A; --muted-2: #A8ABB8; --rule: #E4DFD1; --rule-strong: #C7C0AC;
+    --accent: #2E5D7B; --ochre: #B87D3A; --ochre-soft: #F2E8D4;
+    --code-bg: #EEE9DA;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  }
+  :root[data-theme="light"] {
+    --ground: #F7F5F0; --panel: #FFFDF7; --ink: #1B1E24; --ink-soft: #3C414C;
+    --muted: #74788A; --muted-2: #A8ABB8; --rule: #E4DFD1; --rule-strong: #C7C0AC;
+    --accent: #2E5D7B; --ochre: #B87D3A; --ochre-soft: #F2E8D4;
+    --code-bg: #EEE9DA;
+  }
+
+  html { background: var(--ground); scroll-behavior: smooth; }
+  body { font-family: var(--sans); color: var(--ink); line-height: 1.6; font-size: 15px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 28px 96px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); color: var(--ink); padding: 1px 5px; border-radius: 3px; }
+
+  /* Masthead */
+  .masthead { padding-bottom: 24px; border-bottom: 1.5px solid var(--rule-strong); margin-bottom: 20px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 12px; }
+  .eyebrow .sep { color: var(--muted-2); margin: 0 8px; }
+  .title { font-family: var(--serif); font-weight: 500; font-size: 42px; line-height: 1.08; color: var(--ink); margin: 0 0 10px; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink-soft); margin: 0; max-width: 60ch; text-wrap: balance; }
+
+  /* Nav bar - sticky */
+  .navbar { background: var(--ground); position: sticky; top: 0; z-index: 10; padding: 16px 0; margin-bottom: 24px; border-bottom: 1px solid var(--rule); }
+  .search-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .search-input { font-family: var(--sans); font-size: 14px; padding: 10px 14px; border: 1px solid var(--rule-strong); background: var(--panel); color: var(--ink); border-radius: 4px; }
+  .search-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+  .search-count { font-size: 12px; color: var(--muted); font-family: var(--sans); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; white-space: nowrap; }
+  .alphabet { display: flex; flex-wrap: wrap; gap: 3px; }
+  .alphabet a { font-family: var(--serif); font-size: 14px; font-weight: 500; padding: 6px 10px; border-radius: 3px; color: var(--muted); min-width: 22px; text-align: center; transition: all 0.1s; }
+  .alphabet a:hover { background: var(--panel); color: var(--accent); text-decoration: none; }
+  .alphabet a.has { color: var(--ink); }
+  .alphabet a.has:hover { background: var(--ochre-soft); color: var(--ochre); }
+  .alphabet a.empty { color: var(--muted-2); cursor: default; pointer-events: none; }
+
+  /* Intro */
+  .intro { background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--accent); padding: 18px 22px; margin: 0 0 32px; }
+  .intro p { margin: 0 0 8px; font-size: 14px; color: var(--ink); line-height: 1.55; }
+  .intro p:last-child { margin-bottom: 0; }
+  .intro .legend { font-size: 12px; color: var(--muted); font-style: italic; padding-top: 8px; margin-top: 8px; border-top: 1px dotted var(--rule); }
+
+  /* Letter section */
+  .letter { margin-bottom: 36px; scroll-margin-top: 100px; }
+  .letter-head { font-family: var(--serif); font-size: 42px; font-weight: 500; color: var(--ochre); margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--rule); letter-spacing: -0.02em; line-height: 1; font-style: italic; }
+
+  /* Entry */
+  .entry { padding: 18px 0; border-bottom: 1px dotted var(--rule); scroll-margin-top: 100px; }
+  .entry:last-child { border-bottom: none; }
+  .entry-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .entry-term { font-family: var(--serif); font-size: 20px; font-weight: 500; color: var(--ink); margin: 0; letter-spacing: -0.005em; line-height: 1.2; }
+  .entry-abbr { font-family: var(--mono); font-size: 12px; color: var(--muted); background: var(--code-bg); padding: 2px 8px; border-radius: 3px; letter-spacing: 0.02em; }
+  .entry-cat { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ochre); font-weight: 700; }
+  .entry-def { color: var(--ink); font-size: 15px; line-height: 1.6; margin: 0 0 10px; }
+  .entry-def strong { color: var(--ink); font-weight: 600; }
+  .entry-note { font-family: var(--serif); font-style: italic; color: var(--ink-soft); font-size: 14px; line-height: 1.55; margin: 6px 0 0; padding-left: 14px; border-left: 2px solid var(--rule-strong); }
+  .entry-see { font-size: 12px; color: var(--muted); margin: 10px 0 0; font-style: italic; }
+  .entry-see a { color: var(--accent); }
+
+  /* Category chips */
+  .cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+  .cat-chip { font-family: var(--sans); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; padding: 4px 10px; border: 1px solid var(--rule-strong); color: var(--muted); border-radius: 20px; cursor: pointer; background: var(--panel); transition: all 0.1s; }
+  .cat-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .cat-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .cat-chip.all { border-color: var(--ochre); color: var(--ochre); }
+  .cat-chip.all.active { background: var(--ochre); color: white; }
+
+  /* Hidden by filter */
+  .entry.hidden { display: none; }
+  .letter.hidden { display: none; }
+
+  footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--rule-strong); font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 13px; text-align: center; }
+  footer .signoff { font-family: var(--sans); font-style: normal; text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; color: var(--muted-2); margin-top: 6px; }
+
+  @media print {
+    .navbar { position: static; border-bottom: none; }
+    .search-row { display: none; }
+    .cats { display: none; }
+    .entry { page-break-inside: avoid; }
+    body { font-size: 11pt; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Reference <span class="sep">·</span> AI Dictionary <span class="sep">·</span> Tathkarah</p>
+    <h1 class="title">A Tathkarah engineer's AI dictionary.</h1>
+    <p class="subtitle">Sixty terms you'll encounter, defined in plain language, with a practical note on what each means for your day-to-day. Keep this open in a tab.</p>
+  </header>
+
+  <div class="navbar">
+    <div class="search-row">
+      <input type="text" class="search-input" id="search" placeholder="Search terms, definitions, or abbreviations…" autofocus>
+      <div class="search-count" id="count">60 terms</div>
+    </div>
+    <div class="alphabet" id="alphabet"></div>
+    <div class="cats" id="cats">
+      <span class="cat-chip all active" data-cat="all">All</span>
+      <span class="cat-chip" data-cat="model">Model &amp; training</span>
+      <span class="cat-chip" data-cat="prompt">Prompting</span>
+      <span class="cat-chip" data-cat="capability">Capabilities &amp; failures</span>
+      <span class="cat-chip" data-cat="tool">Tools &amp; agents</span>
+      <span class="cat-chip" data-cat="retrieval">Retrieval</span>
+      <span class="cat-chip" data-cat="safety">Safety &amp; governance</span>
+      <span class="cat-chip" data-cat="ops">Ops &amp; cost</span>
+      <span class="cat-chip" data-cat="context">Context &amp; memory</span>
+    </div>
+  </div>
+
+  <div class="intro">
+    <p>This is a reference, not a syllabus &mdash; each term stands alone. Where an entry has a <em>practical note</em>, it's the "so what" for Tathkarah work. Cross-references let you follow related concepts.</p>
+    <p class="legend"><strong>Legend:</strong> abbreviations in <code>MONOSPACE</code> · practical notes in <em>italics</em> · related terms after <strong>see also</strong>.</p>
+  </div>
+
+  <div id="entries">
+
+    <!-- ================================================================ A -->
+    <div class="letter" id="A">
+      <div class="letter-head">A</div>
+
+      <div class="entry" data-cat="tool" data-term="agent">
+        <div class="entry-head"><h2 class="entry-term">Agent</h2><span class="entry-cat">Tools &amp; agents</span></div>
+        <p class="entry-def">An AI configuration that can autonomously take actions in the world using tools, rather than only producing text. An agent typically has a goal, a set of tools it can call, and a loop that runs until the goal is met or a stopping condition triggers.</p>
+        <p class="entry-note">Claude Code is an agent environment: it reads files, runs commands, edits code, all on your behalf. Contrast with a plain chat window, which only produces text.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#tool-use">Tool use</a>, <a href="#orchestrator">Orchestrator</a>, <a href="#autonomous-agent">Autonomous agent</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="safety" data-term="alignment">
+        <div class="entry-head"><h2 class="entry-term">Alignment</h2><span class="entry-cat">Safety &amp; governance</span></div>
+        <p class="entry-def">The broad problem of making an AI system behave the way the humans deploying it intend. In practice, alignment includes helpfulness, honesty, harmlessness, and following instructions. Achieved through training techniques (RLHF, constitutional AI) rather than emerging naturally.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#rlhf">RLHF</a>, <a href="#constitutional-ai">Constitutional AI</a>, <a href="#safety">Safety</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="attention">
+        <div class="entry-head"><h2 class="entry-term">Attention</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The core mechanism in a transformer that lets the model, when generating each output token, weight the importance of every earlier token in the context. "Attention is all you need" &mdash; the 2017 paper by Vaswani et al. &mdash; introduced this architecture and started the modern era.</p>
+        <p class="entry-note">Why the beginning and end of your prompt matter more: attention concentrates there. Bury important instructions in the middle and they lose weight.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#transformer">Transformer</a>, <a href="#context-window">Context window</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="tool" data-term="autonomous-agent" id="autonomous-agent">
+        <div class="entry-head"><h2 class="entry-term">Autonomous agent</h2><span class="entry-cat">Tools &amp; agents</span></div>
+        <p class="entry-def">An agent that runs a multi-step task without waiting for human confirmation at each step. It plans, executes, evaluates, and iterates until completion or failure.</p>
+        <p class="entry-note">High-leverage when the task is well-scoped; high-risk when the tools it can call have side effects. For Tathkarah production work, keep a human in the loop on any autonomous change.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ B -->
+    <div class="letter" id="B">
+      <div class="letter-head">B</div>
+
+      <div class="entry" data-cat="model" data-term="base-model">
+        <div class="entry-head"><h2 class="entry-term">Base model</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The raw output of pretraining, before any fine-tuning or alignment. Base models are essentially very powerful autocomplete engines &mdash; they'll continue any prompt in the style of their training data, without any assistant-like behavior.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#pretraining">Pretraining</a>, <a href="#fine-tuning">Fine-tuning</a>, <a href="#foundation-model">Foundation model</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="benchmark">
+        <div class="entry-head"><h2 class="entry-term">Benchmark</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">A standardized dataset and scoring protocol used to compare model performance. Examples: MMLU (general knowledge), HumanEval (code), GSM8K (math). Useful for comparing models at a coarse level; often misleading for predicting real-world usefulness.</p>
+        <p class="entry-note">Do not choose your model by leaderboard. Choose it by running your actual work through it.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ C -->
+    <div class="letter" id="C">
+      <div class="letter-head">C</div>
+
+      <div class="entry" data-cat="prompt" data-term="chain-of-thought">
+        <div class="entry-head"><h2 class="entry-term">Chain-of-thought</h2><span class="entry-abbr">CoT</span><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">A prompting technique where the model is instructed to reason step-by-step before producing a final answer. Empirically improves performance on complex tasks. Modern chat models often do this automatically, but asking explicitly ("think step by step") still helps on hard cases.</p>
+        <p class="entry-note">Best for debugging, algebra, ambiguous problems. Add "explain your reasoning first, then answer" to hard prompts.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#few-shot">Few-shot</a>, <a href="#self-consistency">Self-consistency</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="chat-model">
+        <div class="entry-head"><h2 class="entry-term">Chat model</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">A fine-tuned model designed for turn-based conversation. Understands system prompts, user turns, and produces assistant responses. What almost everyone uses today. Contrast with a base model.</p>
+      </div>
+
+      <div class="entry" data-cat="retrieval" data-term="chunking">
+        <div class="entry-head"><h2 class="entry-term">Chunking</h2><span class="entry-cat">Retrieval</span></div>
+        <p class="entry-def">Breaking a long document into smaller pieces so it can be embedded and retrieved. Chunk size and boundaries affect retrieval quality substantially &mdash; too small loses context, too large dilutes relevance.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#embedding">Embedding</a>, <a href="#rag">RAG</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="claude">
+        <div class="entry-head"><h2 class="entry-term">Claude</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">Anthropic's family of large language models. The generations are named for size and speed: Opus (frontier), Sonnet (workhorse), Haiku (fast), Fable (efficient reasoning). Constitutional AI is their alignment technique.</p>
+        <p class="entry-note">Claude Code, the tool driving this workbook, runs on Claude models. Opus for hard work, Sonnet for daily use.</p>
+      </div>
+
+      <div class="entry" data-cat="safety" data-term="constitutional-ai" id="constitutional-ai">
+        <div class="entry-head"><h2 class="entry-term">Constitutional AI</h2><span class="entry-abbr">CAI</span><span class="entry-cat">Safety &amp; governance</span></div>
+        <p class="entry-def">Anthropic's alignment technique: rather than only using human feedback, the model is trained to critique and revise its own outputs against a written set of principles ("a constitution"). Reduces the amount of human labeling needed for safety training.</p>
+      </div>
+
+      <div class="entry" data-cat="context" data-term="context">
+        <div class="entry-head"><h2 class="entry-term">Context</h2><span class="entry-cat">Context &amp; memory</span></div>
+        <p class="entry-def">The full text the model sees when generating &mdash; the system prompt, the conversation history so far, any documents you've included, plus your current turn. Everything the model can attend to for this generation.</p>
+      </div>
+
+      <div class="entry" data-cat="context" data-term="context-window" id="context-window">
+        <div class="entry-head"><h2 class="entry-term">Context window</h2><span class="entry-cat">Context &amp; memory</span></div>
+        <p class="entry-def">The maximum number of tokens the model can attend to in one generation. Ranges from 8K (older models) to 1M+ (Claude Opus, Gemini 1.5 Pro). Determines how much you can put in the prompt.</p>
+        <p class="entry-note">Larger isn't automatically better &mdash; the model may attend less well to content in the middle of a very long context. Break big tasks into focused sessions.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ D -->
+    <div class="letter" id="D">
+      <div class="letter-head">D</div>
+
+      <div class="entry" data-cat="model" data-term="dpo">
+        <div class="entry-head"><h2 class="entry-term">Direct Preference Optimization</h2><span class="entry-abbr">DPO</span><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">An alternative alignment method to RLHF that skips the separate reward-model step. Simpler pipeline, often comparable results. Increasingly common.</p>
+      </div>
+
+      <div class="entry" data-cat="capability" data-term="drift">
+        <div class="entry-head"><h2 class="entry-term">Drift</h2><span class="entry-cat">Capabilities &amp; failures</span></div>
+        <p class="entry-def">A failure mode where model output over a long conversation gradually loses accurate context or consistency with earlier turns. The model isn't remembering wrong &mdash; it's attending less well to more content.</p>
+        <p class="entry-note">Symptom: your Claude Code session that was fine for the first hour starts producing worse suggestions in the third hour. Start a fresh session.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ E -->
+    <div class="letter" id="E">
+      <div class="letter-head">E</div>
+
+      <div class="entry" data-cat="retrieval" data-term="embedding">
+        <div class="entry-head"><h2 class="entry-term">Embedding</h2><span class="entry-cat">Retrieval</span></div>
+        <p class="entry-def">A vector representation of text (or an image, or code) where semantically similar items are close together in vector space. Embeddings enable semantic search: the query and documents both become vectors, and the nearest ones are the most relevant.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#rag">RAG</a>, <a href="#vector-store">Vector store</a>, <a href="#semantic-search">Semantic search</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="eval">
+        <div class="entry-head"><h2 class="entry-term">Eval</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">Short for evaluation. A test suite for a prompt or an AI-assisted workflow &mdash; a set of inputs with expected outputs (or with judgment criteria), run periodically to detect quality drift or compare model versions.</p>
+        <p class="entry-note">The single highest-leverage engineering practice for AI-heavy work. Build evals for your most repeated Tathkarah workflows.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ F -->
+    <div class="letter" id="F">
+      <div class="letter-head">F</div>
+
+      <div class="entry" data-cat="prompt" data-term="few-shot" id="few-shot">
+        <div class="entry-head"><h2 class="entry-term">Few-shot prompting</h2><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">Providing two to five worked examples of the input-to-output transformation before asking the model to complete the pattern. Powerful because it activates in-context learning &mdash; the model can generalize from a handful of examples remarkably well.</p>
+        <p class="entry-note">If your zero-shot prompt gives inconsistent output, add three examples. Usually enough.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#zero-shot">Zero-shot</a>, <a href="#in-context-learning">In-context learning</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="fine-tuning" id="fine-tuning">
+        <div class="entry-head"><h2 class="entry-term">Fine-tuning</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">Additional training on a curated dataset, on top of a pretrained model, to specialize behavior. Common flavors: supervised fine-tuning (SFT) on demonstration data, and preference optimization (RLHF, DPO) on ranked pairs.</p>
+        <p class="entry-note">In 2026, fine-tuning is rarely the answer for a team like ours. Better prompts, better retrieval, and better tool use handle most needs at a fraction of the cost.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="foundation-model" id="foundation-model">
+        <div class="entry-head"><h2 class="entry-term">Foundation model</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">A very large model, trained on very broad data, adaptable to many downstream tasks. GPT-4, Claude, Gemini, Llama are all foundation models. The term emphasizes the "adapt for anything" property.</p>
+      </div>
+
+      <div class="entry" data-cat="tool" data-term="function-calling">
+        <div class="entry-head"><h2 class="entry-term">Function calling</h2><span class="entry-cat">Tools &amp; agents</span></div>
+        <p class="entry-def">A pattern where you describe available functions (with typed parameters) in the prompt, and the model responds with a structured request to call one. Enables the model to trigger real actions in your code.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#tool-use">Tool use</a>, <a href="#structured-output">Structured output</a>.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ G -->
+    <div class="letter" id="G">
+      <div class="letter-head">G</div>
+
+      <div class="entry" data-cat="retrieval" data-term="grounding">
+        <div class="entry-head"><h2 class="entry-term">Grounding</h2><span class="entry-cat">Retrieval</span></div>
+        <p class="entry-def">Providing the model with specific factual context so its output is anchored to reality rather than generated from prior alone. Grounding via retrieval (RAG), via tool calls, or via including source documents directly in the prompt.</p>
+        <p class="entry-note">The most reliable defense against hallucination. If accuracy matters, ground.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ H -->
+    <div class="letter" id="H">
+      <div class="letter-head">H</div>
+
+      <div class="entry" data-cat="capability" data-term="hallucination">
+        <div class="entry-head"><h2 class="entry-term">Hallucination</h2><span class="entry-cat">Capabilities &amp; failures</span></div>
+        <p class="entry-def">Model output that is fluent, confident, and factually wrong or fabricated. Not a bug &mdash; a consequence of how the model is trained. The model has no distinction between "recall" and "generate"; both produce next-token predictions.</p>
+        <p class="entry-note">Never trust confidence as a signal of correctness. Always verify.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#confabulation">Confabulation</a>, <a href="#drift">Drift</a>, <a href="#grounding">Grounding</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="capability" data-term="confabulation" id="confabulation">
+        <div class="entry-head"><h2 class="entry-term">Hallucination: Confabulation</h2><span class="entry-cat">Capabilities &amp; failures</span></div>
+        <p class="entry-def">A specific hallucination shape: plausible narrative that connects real facts incorrectly. "The <code>db.eval()</code> function was removed in MongoDB 5.2" &mdash; the function was removed, the version is wrong.</p>
+      </div>
+
+      <div class="entry" data-cat="capability" data-term="invention">
+        <div class="entry-head"><h2 class="entry-term">Hallucination: Invention</h2><span class="entry-cat">Capabilities &amp; failures</span></div>
+        <p class="entry-def">A specific hallucination shape: the model produces a specific fact &mdash; function name, version number, citation &mdash; that does not exist. Common with API references and academic citations. Detectable by grep or a documentation lookup.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ I -->
+    <div class="letter" id="I">
+      <div class="letter-head">I</div>
+
+      <div class="entry" data-cat="prompt" data-term="in-context-learning" id="in-context-learning">
+        <div class="entry-head"><h2 class="entry-term">In-context learning</h2><span class="entry-abbr">ICL</span><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">The emergent ability of large models to learn a new task from examples given in the prompt, with no weight updates. The mechanism behind few-shot prompting. Somewhat mysterious &mdash; still active research.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="inference">
+        <div class="entry-head"><h2 class="entry-term">Inference</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The process of running a trained model to produce output. Contrast with training, which is the process of creating the model. When you use Claude, you're doing inference; when Anthropic trained Claude, that was training.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="instruction-tuning">
+        <div class="entry-head"><h2 class="entry-term">Instruction tuning</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">Fine-tuning on a dataset of instructions and their appropriate responses. Turns a base model into one that reliably follows instructions. A foundational step before RLHF.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ J -->
+    <div class="letter" id="J">
+      <div class="letter-head">J</div>
+
+      <div class="entry" data-cat="safety" data-term="jailbreak">
+        <div class="entry-head"><h2 class="entry-term">Jailbreak</h2><span class="entry-cat">Safety &amp; governance</span></div>
+        <p class="entry-def">A user technique to bypass a model's safety training and get it to produce content it was trained to refuse. Modern models resist most jailbreaks, but the technique is a constant cat-and-mouse.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ L -->
+    <div class="letter" id="L">
+      <div class="letter-head">L</div>
+
+      <div class="entry" data-cat="model" data-term="llm">
+        <div class="entry-head"><h2 class="entry-term">Large Language Model</h2><span class="entry-abbr">LLM</span><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">A neural network with billions to trillions of parameters, trained to model human language. All the models an engineer encounters daily &mdash; Claude, GPT, Gemini, Llama &mdash; are LLMs.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="llm-as-judge">
+        <div class="entry-head"><h2 class="entry-term">LLM-as-judge</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">Using one LLM to evaluate the outputs of another (or its own outputs). A common eval technique &mdash; cheaper than human evaluation, more scalable, but has biases (models often favor their own family's style).</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ M -->
+    <div class="letter" id="M">
+      <div class="letter-head">M</div>
+
+      <div class="entry" data-cat="tool" data-term="mcp">
+        <div class="entry-head"><h2 class="entry-term">Model Context Protocol</h2><span class="entry-abbr">MCP</span><span class="entry-cat">Tools &amp; agents</span></div>
+        <p class="entry-def">An open standard from Anthropic for connecting AI models to external tools and data sources. Lets you plug a database, a filesystem, a Slack integration into Claude without writing custom code per model.</p>
+        <p class="entry-note">Claude Code uses MCP for its browser tools, iOS simulator, terminal, and more.</p>
+      </div>
+
+      <div class="entry" data-cat="context" data-term="memory">
+        <div class="entry-head"><h2 class="entry-term">Memory (persistent)</h2><span class="entry-cat">Context &amp; memory</span></div>
+        <p class="entry-def">Long-term notes an AI system stores about a user, project, or task, that survive across sessions. Claude Code writes memory files at <code>~/.claude/projects/…/memory/</code>. Distinct from context, which is per-turn.</p>
+      </div>
+
+      <div class="entry" data-cat="ops" data-term="model-tier">
+        <div class="entry-head"><h2 class="entry-term">Model tier</h2><span class="entry-cat">Ops &amp; cost</span></div>
+        <p class="entry-def">A capability/speed/cost bracket. Vendors publish multiple tiers: small &amp; fast (Haiku, GPT-4o mini, Gemini Flash), mid (Sonnet, GPT-4o), frontier (Opus, GPT-4 Turbo, Gemini Ultra). Match the tier to the workload.</p>
+      </div>
+
+      <div class="entry" data-cat="safety" data-term="model-card">
+        <div class="entry-head"><h2 class="entry-term">Model card</h2><span class="entry-cat">Safety &amp; governance</span></div>
+        <p class="entry-def">A document published by a model provider describing intended use, known limits, training data, evaluation results, and safety considerations. The public accountability document.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ O -->
+    <div class="letter" id="O">
+      <div class="letter-head">O</div>
+
+      <div class="entry" data-cat="tool" data-term="orchestrator" id="orchestrator">
+        <div class="entry-head"><h2 class="entry-term">Orchestrator</h2><span class="entry-cat">Tools &amp; agents</span></div>
+        <p class="entry-def">An agent that coordinates multiple sub-agents to accomplish a larger goal. The orchestrator plans, spawns workers, monitors their results, and composes final output.</p>
+      </div>
+
+      <div class="entry" data-cat="capability" data-term="over-refusal">
+        <div class="entry-head"><h2 class="entry-term">Over-refusal</h2><span class="entry-cat">Capabilities &amp; failures</span></div>
+        <p class="entry-def">A failure mode where a model refuses reasonable requests because they superficially resemble unsafe ones. Well-aligned models balance helpfulness and safety; over-aligned ones become uselessly cautious.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ P -->
+    <div class="letter" id="P">
+      <div class="letter-head">P</div>
+
+      <div class="entry" data-cat="model" data-term="parameters">
+        <div class="entry-head"><h2 class="entry-term">Parameters</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The learned weights of a neural network. Modern LLMs have tens of billions to trillions. Roughly correlates with capability, but architecture and training data matter as much or more.</p>
+      </div>
+
+      <div class="entry" data-cat="safety" data-term="pii">
+        <div class="entry-head"><h2 class="entry-term">Personally Identifiable Information</h2><span class="entry-abbr">PII</span><span class="entry-cat">Safety &amp; governance</span></div>
+        <p class="entry-def">Data that identifies a natural person &mdash; names, emails, phone numbers, government IDs, passport numbers, addresses. Regulated under most data-protection frameworks. Combinations of "safe" fields can re-identify.</p>
+        <p class="entry-note">The Tathkarah rule: no customer PII ever leaves your machine into an AI tool. No exceptions.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="pretraining" id="pretraining">
+        <div class="entry-head"><h2 class="entry-term">Pretraining</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The initial, self-supervised training phase on a very large corpus of text. Where the model learns language, world knowledge, code, and some reasoning. Costs tens of millions of dollars and takes weeks to months.</p>
+      </div>
+
+      <div class="entry" data-cat="prompt" data-term="prompt">
+        <div class="entry-head"><h2 class="entry-term">Prompt</h2><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">The text input to the model &mdash; instructions, context, question. The single most important thing you control. Good prompt = usable output; bad prompt = wasted call.</p>
+      </div>
+
+      <div class="entry" data-cat="context" data-term="prompt-caching">
+        <div class="entry-head"><h2 class="entry-term">Prompt caching</h2><span class="entry-cat">Context &amp; memory</span></div>
+        <p class="entry-def">A vendor feature where a long, repeated prefix of your prompt is cached server-side so subsequent calls reuse it without recomputing. Dramatically reduces cost and latency for repeated queries against the same context.</p>
+      </div>
+
+      <div class="entry" data-cat="prompt" data-term="prompt-engineering">
+        <div class="entry-head"><h2 class="entry-term">Prompt engineering</h2><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">The discipline of writing, testing, and iterating on prompts to reliably produce useful outputs. An empirical practice &mdash; you learn by trying, measuring, adjusting.</p>
+      </div>
+
+      <div class="entry" data-cat="safety" data-term="prompt-injection">
+        <div class="entry-head"><h2 class="entry-term">Prompt injection</h2><span class="entry-cat">Safety &amp; governance</span></div>
+        <p class="entry-def">A security vulnerability where user-supplied content (a customer email, a scraped webpage, a document upload) contains instructions that override the system prompt. The AI-era equivalent of SQL injection.</p>
+        <p class="entry-note">If you're building any feature that feeds user text into an LLM, design assuming that text can subvert the model. Constrain what the model can <em>do</em>, don't just trust that it will refuse.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ R -->
+    <div class="letter" id="R">
+      <div class="letter-head">R</div>
+
+      <div class="entry" data-cat="ops" data-term="rate-limit">
+        <div class="entry-head"><h2 class="entry-term">Rate limit</h2><span class="entry-cat">Ops &amp; cost</span></div>
+        <p class="entry-def">A cap set by the vendor on how many requests or tokens you can send per minute/day. Design your integrations to handle rate-limit errors gracefully &mdash; back off and retry.</p>
+      </div>
+
+      <div class="entry" data-cat="safety" data-term="red-team">
+        <div class="entry-head"><h2 class="entry-term">Red team</h2><span class="entry-cat">Safety &amp; governance</span></div>
+        <p class="entry-def">A team (or process) that adversarially tests a system to find weaknesses. For AI: trying to jailbreak, extract training data, cause misuse. Standard practice for anyone shipping AI features to customers.</p>
+      </div>
+
+      <div class="entry" data-cat="retrieval" data-term="rag" id="rag">
+        <div class="entry-head"><h2 class="entry-term">Retrieval-Augmented Generation</h2><span class="entry-abbr">RAG</span><span class="entry-cat">Retrieval</span></div>
+        <p class="entry-def">A pattern where relevant documents are fetched from a database (via embedding search or classical search) and included in the prompt to ground the model's response. Standard architecture for "chat with my docs" applications.</p>
+        <p class="entry-see"><strong>See also</strong> <a href="#embedding">Embedding</a>, <a href="#vector-store">Vector store</a>, <a href="#grounding">Grounding</a>.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="rlhf">
+        <div class="entry-head"><h2 class="entry-term">Reinforcement Learning from Human Feedback</h2><span class="entry-abbr">RLHF</span><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">A training method: humans rank model outputs by quality; a reward model learns those preferences; the base model is trained to maximize the reward. The reason modern chat models feel usefully aligned.</p>
+      </div>
+
+      <div class="entry" data-cat="retrieval" data-term="reranking">
+        <div class="entry-head"><h2 class="entry-term">Reranking</h2><span class="entry-cat">Retrieval</span></div>
+        <p class="entry-def">A second stage after retrieval where a more expensive model re-scores the top-N results for relevance. Improves quality at the cost of extra latency and compute.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ S -->
+    <div class="letter" id="S">
+      <div class="letter-head">S</div>
+
+      <div class="entry" data-cat="model" data-term="sampling">
+        <div class="entry-head"><h2 class="entry-term">Sampling</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The process of picking each output token from the model's probability distribution. Controlled by temperature, top-p, top-k, and other parameters. Determines how random vs deterministic the output is.</p>
+      </div>
+
+      <div class="entry" data-cat="retrieval" data-term="semantic-search" id="semantic-search">
+        <div class="entry-head"><h2 class="entry-term">Semantic search</h2><span class="entry-cat">Retrieval</span></div>
+        <p class="entry-def">Search that matches by meaning rather than by exact keywords. Query and documents are embedded into vectors; nearest-neighbor search returns the most relevant. Better than keyword search for natural-language queries.</p>
+      </div>
+
+      <div class="entry" data-cat="prompt" data-term="self-consistency" id="self-consistency">
+        <div class="entry-head"><h2 class="entry-term">Self-consistency</h2><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">A prompting technique where you sample multiple chains of thought for the same problem and take the majority answer. Improves accuracy at the cost of extra tokens.</p>
+      </div>
+
+      <div class="entry" data-cat="prompt" data-term="structured-output" id="structured-output">
+        <div class="entry-head"><h2 class="entry-term">Structured output</h2><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">Constraining the model to produce output matching a specific schema (usually JSON). Vendors provide this via "JSON mode" or "tool use". Reliable structured output is a hard problem the industry has largely solved by 2025.</p>
+      </div>
+
+      <div class="entry" data-cat="capability" data-term="sycophancy">
+        <div class="entry-head"><h2 class="entry-term">Sycophancy</h2><span class="entry-cat">Capabilities &amp; failures</span></div>
+        <p class="entry-def">A failure mode where the model agrees with the user's stated position even when it's wrong. Comes from training on human feedback that rewards agreement.</p>
+        <p class="entry-note">When you want an honest second opinion, phrase your ask neutrally. "Am I right that X?" invites sycophancy; "What's wrong with X?" does not.</p>
+      </div>
+
+      <div class="entry" data-cat="context" data-term="system-prompt">
+        <div class="entry-head"><h2 class="entry-term">System prompt</h2><span class="entry-cat">Context &amp; memory</span></div>
+        <p class="entry-def">Instructions from the developer that set persistent behavior for the model across a conversation. Distinct from user turns. Modern models attend strongly to system prompts.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ T -->
+    <div class="letter" id="T">
+      <div class="letter-head">T</div>
+
+      <div class="entry" data-cat="model" data-term="temperature">
+        <div class="entry-head"><h2 class="entry-term">Temperature</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">A sampling parameter controlling how "creative" the model is. Zero = always pick the most probable next token = deterministic. Higher values = more variety. For most engineering work, low temperature (0.0 to 0.3) is right.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="token">
+        <div class="entry-head"><h2 class="entry-term">Token</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The unit of text the model processes. Roughly 3&ndash;4 characters of English or one common word. Arabic and code tokenize more densely (2&ndash;3 tokens per Arabic character is not unusual). What you pay for.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="tokenization">
+        <div class="entry-head"><h2 class="entry-term">Tokenization</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The process of splitting text into tokens the model can process. Byte-pair encoding (BPE) is the most common algorithm. Different models tokenize the same text differently.</p>
+      </div>
+
+      <div class="entry" data-cat="tool" data-term="tool-use" id="tool-use">
+        <div class="entry-head"><h2 class="entry-term">Tool use</h2><span class="entry-cat">Tools &amp; agents</span></div>
+        <p class="entry-def">The capability of a model to invoke external functions &mdash; search, code execution, database queries, file reads &mdash; as part of producing its answer. What turns a chat model into an agent.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="top-p">
+        <div class="entry-head"><h2 class="entry-term">Top-p (nucleus sampling)</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">A sampling parameter: consider only the smallest set of tokens whose cumulative probability exceeds p, then sample from that set. Cuts off the long tail of unlikely tokens.</p>
+      </div>
+
+      <div class="entry" data-cat="model" data-term="transformer" id="transformer">
+        <div class="entry-head"><h2 class="entry-term">Transformer</h2><span class="entry-cat">Model &amp; training</span></div>
+        <p class="entry-def">The neural network architecture underlying all modern LLMs. Introduced by Vaswani et al. in "Attention Is All You Need" (2017). Uses self-attention to process sequences of tokens in parallel rather than sequentially.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ V -->
+    <div class="letter" id="V">
+      <div class="letter-head">V</div>
+
+      <div class="entry" data-cat="retrieval" data-term="vector-store" id="vector-store">
+        <div class="entry-head"><h2 class="entry-term">Vector store</h2><span class="entry-cat">Retrieval</span></div>
+        <p class="entry-def">A database optimized for storing and querying high-dimensional vectors (embeddings). Supports fast approximate nearest-neighbor search. Examples: Pinecone, Weaviate, Qdrant, pgvector.</p>
+      </div>
+    </div>
+
+    <!-- ================================================================ Z -->
+    <div class="letter" id="Z">
+      <div class="letter-head">Z</div>
+
+      <div class="entry" data-cat="prompt" data-term="zero-shot" id="zero-shot">
+        <div class="entry-head"><h2 class="entry-term">Zero-shot prompting</h2><span class="entry-cat">Prompting</span></div>
+        <p class="entry-def">Prompting the model to perform a task with no examples in the prompt, relying entirely on pretrained knowledge and instructions. Simple, cheap, works for common tasks the model has seen countless variations of.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    A working dictionary, not a completed one — additions come from the failures we catch and the terms we didn't know we needed.
+    <div class="signoff">Tathkarah · AI Dictionary · Draft 01</div>
+  </footer>
+
+</div>
+
+<script>
+  // Build alphabet nav based on which letters actually have entries
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const alphabetEl = document.getElementById('alphabet');
+  letters.forEach(L => {
+    const target = document.getElementById(L);
+    const a = document.createElement('a');
+    a.textContent = L;
+    if (target) { a.href = '#' + L; a.className = 'has'; }
+    else { a.className = 'empty'; }
+    alphabetEl.appendChild(a);
+  });
+
+  // Search
+  const search = document.getElementById('search');
+  const count = document.getElementById('count');
+  const entries = document.querySelectorAll('.entry');
+  const totalTerms = entries.length;
+
+  function updateCount(visible) {
+    if (visible === totalTerms) count.textContent = totalTerms + ' terms';
+    else count.textContent = visible + ' of ' + totalTerms;
+  }
+  updateCount(totalTerms);
+
+  let activeCat = 'all';
+
+  function apply() {
+    const q = search.value.toLowerCase().trim();
+    let visible = 0;
+    entries.forEach(e => {
+      const matchesCat = (activeCat === 'all' || e.dataset.cat === activeCat);
+      const matchesSearch = (!q || e.textContent.toLowerCase().includes(q));
+      if (matchesCat && matchesSearch) { e.classList.remove('hidden'); visible++; }
+      else e.classList.add('hidden');
+    });
+    document.querySelectorAll('.letter').forEach(l => {
+      const has = l.querySelector('.entry:not(.hidden)');
+      if (has) l.classList.remove('hidden'); else l.classList.add('hidden');
+    });
+    updateCount(visible);
+  }
+
+  search.addEventListener('input', apply);
+
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeCat = chip.dataset.cat;
+      apply();
+    });
+  });
+</script>

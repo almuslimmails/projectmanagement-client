@@ -1,0 +1,578 @@
+<title>AI-Assisted Development — Tathkarah</title>
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --bg-soft: #F4F8FB;
+    --surface: #EDF3F7;
+    --surface-2: #F7FAFC;
+    --ink: #1C2B38;
+    --ink-soft: #52677A;
+    --navy: #16324F;
+    --navy-2: #1F4368;
+    --teal: #1F7A78;
+    --mint: #02C39A;
+    --mint-ink: #027A61;
+    --amber: #B9770E;
+    --amber-bg: #FDF3DF;
+    --red: #B03A2E;
+    --red-bg: #FBE9E7;
+    --green: #1E8449;
+    --green-bg: #E8F6EC;
+    --hero-bg: #16324F;
+    --hero-ink: #FFFFFF;
+    --hero-sub: #C9D8E4;
+    --line: #D7E2EA;
+    --code-bg: #102438;
+    --code-ink: #D5E4EF;
+    --shadow: 0 1px 3px rgba(22, 50, 79, .08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0D1B2A;
+      --bg-soft: #102134;
+      --surface: #16324F;
+      --surface-2: #132A42;
+      --ink: #E2ECF4;
+      --ink-soft: #93A9BC;
+      --navy: #DCE7F0;
+      --navy-2: #1F4368;
+      --teal: #4FC3B8;
+      --mint: #02C39A;
+      --mint-ink: #35D6B2;
+      --amber: #E0A33F;
+      --amber-bg: #33290F;
+      --red: #E07B6B;
+      --red-bg: #3A1B16;
+      --green: #63C888;
+      --green-bg: #14311F;
+      --hero-bg: #0A1624;
+      --hero-ink: #FFFFFF;
+      --hero-sub: #A9BdCC;
+      --line: #24415C;
+      --code-bg: #0A1929;
+      --code-ink: #C9DCEA;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #FFFFFF; --bg-soft: #F4F8FB; --surface: #EDF3F7; --surface-2: #F7FAFC;
+    --ink: #1C2B38; --ink-soft: #52677A; --navy: #16324F; --navy-2: #1F4368;
+    --teal: #1F7A78; --mint: #02C39A; --mint-ink: #027A61;
+    --amber: #B9770E; --amber-bg: #FDF3DF; --red: #B03A2E; --red-bg: #FBE9E7;
+    --green: #1E8449; --green-bg: #E8F6EC; --hero-bg: #16324F; --hero-ink: #FFFFFF;
+    --hero-sub: #C9D8E4; --line: #D7E2EA; --code-bg: #102438; --code-ink: #D5E4EF;
+    --shadow: 0 1px 3px rgba(22, 50, 79, .08);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1B2A; --bg-soft: #102134; --surface: #16324F; --surface-2: #132A42;
+    --ink: #E2ECF4; --ink-soft: #93A9BC; --navy: #DCE7F0; --navy-2: #1F4368;
+    --teal: #4FC3B8; --mint: #02C39A; --mint-ink: #35D6B2;
+    --amber: #E0A33F; --amber-bg: #33290F; --red: #E07B6B; --red-bg: #3A1B16;
+    --green: #63C888; --green-bg: #14311F; --hero-bg: #0A1624; --hero-ink: #FFFFFF;
+    --hero-sub: #A9BDCC; --line: #24415C; --code-bg: #0A1929; --code-ink: #C9DCEA;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  code, pre, .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; }
+
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- hero ---------- */
+  .hero { background: var(--hero-bg); color: var(--hero-ink); padding: 72px 0 64px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--mint); margin: 0 0 18px;
+  }
+  .hero h1 { font-size: clamp(34px, 6vw, 58px); line-height: 1.06; margin: 0 0 18px; text-wrap: balance; font-weight: 800; letter-spacing: -.01em; }
+  .hero p.sub { font-size: clamp(17px, 2.2vw, 21px); color: var(--hero-sub); max-width: 46ch; margin: 0 0 28px; }
+  .hero .meta { font-size: 14px; color: var(--hero-sub); opacity: .85; }
+
+  /* ---------- nav ---------- */
+  nav.toc {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  nav.toc .wrap { display: flex; gap: 4px; overflow-x: auto; padding-top: 0; padding-bottom: 0; }
+  nav.toc a {
+    display: block; padding: 13px 12px; white-space: nowrap;
+    font-size: 13.5px; font-weight: 600; color: var(--ink-soft); text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--teal); }
+  nav.toc a:focus-visible { outline: 2px solid var(--mint); outline-offset: -2px; }
+
+  /* ---------- sections ---------- */
+  section { padding: 56px 0 8px; }
+  .kicker {
+    font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--teal); margin: 0 0 10px;
+  }
+  .kicker.warn { color: var(--amber); }
+  .kicker.danger { color: var(--red); }
+  section h2 { font-size: clamp(24px, 3.4vw, 32px); margin: 0 0 14px; color: var(--navy); text-wrap: balance; letter-spacing: -.01em; }
+  section > .wrap > p.lede { color: var(--ink-soft); max-width: 68ch; margin: 0 0 28px; font-size: 17px; }
+
+  /* ---------- cards ---------- */
+  .grid { display: grid; gap: 16px; margin: 0 0 28px; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 860px) { .grid.cols-3 { grid-template-columns: 1fr; } .grid.cols-2 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border-radius: 10px; padding: 22px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0 0 8px; font-size: 17px; color: var(--navy); }
+  .card p { margin: 0; font-size: 14.5px; color: var(--ink); }
+  .card .tag { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+  .card.warn { background: var(--amber-bg); } .card.warn h3 { color: var(--amber); }
+  .card.danger { background: var(--red-bg); } .card.danger h3 { color: var(--red); }
+  .card.ok { background: var(--green-bg); } .card.ok h3 { color: var(--green); }
+
+  /* ---------- banner ---------- */
+  .banner {
+    background: var(--navy-2); color: #FFFFFF; border-radius: 10px;
+    padding: 20px 24px; margin: 0 0 28px; font-size: 16px;
+  }
+  :root[data-theme="dark"] .banner, .dark-banner { background: var(--navy-2); }
+  .banner strong { color: var(--mint); }
+
+  /* ---------- numbered rows ---------- */
+  ol.steps { list-style: none; counter-reset: step; margin: 0 0 28px; padding: 0; display: grid; gap: 10px; }
+  ol.steps li {
+    counter-increment: step;
+    display: grid; grid-template-columns: 44px 200px 1fr; gap: 16px; align-items: start;
+    background: var(--surface-2); border-radius: 10px; padding: 16px 18px;
+  }
+  ol.steps li:nth-child(even) { background: var(--surface); }
+  ol.steps li::before {
+    content: counter(step);
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--teal); color: #fff; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  ol.steps .t { font-weight: 700; color: var(--navy); padding-top: 4px; }
+  ol.steps .t small { display: block; font-weight: 400; color: var(--ink-soft); font-size: 12.5px; }
+  ol.steps .d { font-size: 14.5px; padding-top: 4px; }
+  ol.steps.rules li { grid-template-columns: 44px 260px 1fr; }
+  ol.steps.rules li::before { background: var(--navy-2); color: var(--mint); }
+  @media (max-width: 760px) {
+    ol.steps li, ol.steps.rules li { grid-template-columns: 44px 1fr; }
+    ol.steps .d { grid-column: 2; }
+  }
+
+  /* ---------- prompt compare ---------- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 0 0 12px; }
+  @media (max-width: 860px) { .compare { grid-template-columns: 1fr; } }
+  .compare .pane { border-radius: 10px; padding: 18px 20px; }
+  .pane.weak { background: var(--surface); }
+  .pane.strong { background: var(--green-bg); }
+  .pane .label { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  .pane.weak .label { color: var(--ink-soft); }
+  .pane.strong .label { color: var(--green); }
+  .pane pre {
+    margin: 0 0 12px; padding: 14px 16px; border-radius: 8px;
+    background: var(--code-bg); color: var(--code-ink);
+    font-size: 13px; line-height: 1.55; white-space: pre-wrap; overflow-x: auto;
+  }
+  .pane p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+  .aside { font-style: italic; color: var(--teal); font-size: 15px; margin: 0 0 28px; }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; margin: 0 0 28px; border-radius: 10px; box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+  th { background: var(--navy-2); color: #fff; text-align: left; padding: 11px 14px; font-size: 13.5px; }
+  :root[data-theme="light"] th { background: var(--hero-bg); }
+  td { padding: 11px 14px; border-top: 1px solid var(--line); vertical-align: top; background: var(--bg); }
+  tr.g td { background: var(--green-bg); } tr.a td { background: var(--amber-bg); } tr.r td { background: var(--red-bg); }
+  td.cls { font-weight: 700; white-space: nowrap; }
+  tr.g td.cls { color: var(--green); } tr.a td.cls { color: var(--amber); } tr.r td.cls { color: var(--red); }
+  td:first-child { font-variant-numeric: tabular-nums; }
+
+  /* ---------- quiz ---------- */
+  .quiz { background: var(--bg-soft); border-radius: 14px; padding: 28px; margin: 0 0 28px; }
+  .quiz fieldset { border: 0; margin: 0 0 22px; padding: 0 0 20px; border-bottom: 1px solid var(--line); }
+  .quiz fieldset:last-of-type { border-bottom: 0; }
+  .quiz legend { font-weight: 700; color: var(--navy); font-size: 15.5px; margin-bottom: 10px; line-height: 1.45; }
+  .quiz label {
+    display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 8px;
+    font-size: 14.5px; cursor: pointer;
+  }
+  .quiz label:hover { background: var(--surface); }
+  .quiz input[type="radio"] { margin-top: 3px; accent-color: var(--teal); }
+  .quiz fieldset.correct legend::after { content: "  ✓ correct"; color: var(--green); font-size: 13px; }
+  .quiz fieldset.incorrect legend::after { content: "  ✗ check the highlighted answer"; color: var(--red); font-size: 13px; }
+  .quiz fieldset.incorrect label.answer { background: var(--green-bg); }
+  .quiz .actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+  .btn {
+    background: var(--teal); color: #fff; border: 0; border-radius: 8px;
+    padding: 11px 22px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:focus-visible { outline: 3px solid var(--mint); outline-offset: 2px; }
+  .btn.ghost { background: transparent; color: var(--teal); border: 1.5px solid var(--teal); }
+  #quiz-result { font-weight: 700; font-size: 16px; }
+  #quiz-result.pass { color: var(--green); }
+  #quiz-result.fail { color: var(--red); }
+
+  /* ---------- footer ---------- */
+  footer { background: var(--hero-bg); color: var(--hero-sub); margin-top: 56px; padding: 40px 0; font-size: 14.5px; }
+  footer strong { color: #fff; }
+  footer a { color: var(--mint); }
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Tathkarah · Engineering Training</p>
+    <h1>AI-Assisted Development</h1>
+    <p class="sub">Building the Tathkarah platform faster — tk-* services, Flutter apps, supplier integrations — without lowering the bar.</p>
+    <p class="meta">Core Sessions 1 &amp; 2 · Self-paced companion · July 2026</p>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <div class="wrap">
+    <a href="#why">Why</a>
+    <a href="#sdlc">The dev cycle</a>
+    <a href="#failures">Failure modes</a>
+    <a href="#agent">Working with the agent</a>
+    <a href="#guardrails">Guardrails</a>
+    <a href="#tracks">Our stack</a>
+    <a href="#rules">Five rules</a>
+    <a href="#programme">Programme</a>
+    <a href="#quiz">Self-check</a>
+  </div>
+</nav>
+
+<section id="why">
+  <div class="wrap">
+    <p class="kicker">Introduction</p>
+    <h2>Why this matters for our codebase</h2>
+    <p class="lede">18 backend services, two Flutter apps, supplier integrations (Jazeera, RezLive), the alpha environment and an AWS estate — maintained by a small team. AI assistants are a force multiplier on exactly this kind of surface area.</p>
+    <div class="grid cols-3">
+      <div class="card"><h3>Velocity</h3><p>Boilerplate, tests, mappers, migrations and scripts in minutes — more time for design and hard bugs.</p></div>
+      <div class="card warn"><h3>Guardrails</h3><p>No secrets or customer data in prompts; danger zones (payments, migrations, auth) always get senior eyes.</p></div>
+      <div class="card ok"><h3>Same merge bar</h3><p>AI writes drafts. You review, test and own every line that lands on main.</p></div>
+    </div>
+    <p class="aside">Goal: every engineer ships AI-assisted work confidently — with test coverage and review quality unchanged or better.</p>
+  </div>
+</section>
+
+<section id="sdlc">
+  <div class="wrap">
+    <p class="kicker">Fundamentals</p>
+    <h2>Where AI fits in the dev cycle</h2>
+    <div class="grid cols-3">
+      <div class="card"><span class="tag">Explore</span><p>“Map how a booking flows mock → rezlive → hotel-main” — get oriented in unfamiliar services fast.</p></div>
+      <div class="card"><span class="tag">Design</span><p>Rubber-duck an approach, compare options, spot edge cases before writing code.</p></div>
+      <div class="card"><span class="tag">Implement</span><p>Endpoints, DTOs, mappers, Flutter widgets — with our conventions when you show them.</p></div>
+      <div class="card"><span class="tag">Test</span><p>Unit and integration tests, fixtures, edge cases you didn’t think of.</p></div>
+      <div class="card"><span class="tag">Debug</span><p>Paste the (sanitised) stack trace and logs — fast hypotheses, faster root cause.</p></div>
+      <div class="card"><span class="tag">Review &amp; refactor</span><p>Second-opinion review on a diff, targeted refactors, dead-code cleanup.</p></div>
+    </div>
+    <div class="banner"><strong>Our toolkit:</strong> Claude Code is an agent in your repo, not a chat window — it reads the codebase, edits files, runs tests and works with git. Each repo’s <code>CLAUDE.md</code> is its onboarding doc; keep it current. Company workspace accounts only — personal or free AI accounts never touch Tathkarah code.</div>
+  </div>
+</section>
+
+<section id="failures">
+  <div class="wrap">
+    <p class="kicker warn">Fundamentals</p>
+    <h2>How it fails on code</h2>
+    <div class="grid cols-2">
+      <div class="card warn"><h3>Hallucinated APIs</h3><p>Invents methods, fields and endpoints that don’t exist — especially on niche or internal APIs like our supplier integrations.</p></div>
+      <div class="card warn"><h3>Version drift</h3><p>Suggests APIs from an older major of a library, or deprecated Flutter widgets — its training data lags our <code>package.json</code> and <code>pubspec.yaml</code>.</p></div>
+      <div class="card warn"><h3>Plausible-but-wrong</h3><p>Compiles, reads clean, passes the happy path — then breaks on edge cases: timezones, currency rounding, double bookings.</p></div>
+      <div class="card warn"><h3>Security naivety</h3><p>Will happily concatenate SQL, log PII, or skip auth checks unless your prompt and review demand otherwise.</p></div>
+    </div>
+
+    <h2 style="font-size: 22px;">What that looks like in our stack</h2>
+    <div class="grid cols-3">
+      <div class="card danger"><h3>Invented supplier fields</h3><p>Ask about the Jazeera ServiceBundlesInfo response and it may invent fields that aren’t in the payload. Source of truth: the real API response and our integration notes — paste them in.</p></div>
+      <div class="card danger"><h3>Wrong library era</h3><p>Suggests a better-sqlite3 or Flutter API from two majors ago. Check the installed version in <code>package.json</code> / <code>pubspec.yaml</code> and say it in the prompt.</p></div>
+      <div class="card danger"><h3>Confident migration, silent data loss</h3><p>A clean-looking <code>ALTER TABLE</code> that renames without backfill. Migrations for Console-DB never run anywhere real without review, backup and an alpha pass.</p></div>
+    </div>
+    <div class="banner"><strong>The rule:</strong> “looks right” is not done. Done = failing test reproduced → fix → tests pass → you reviewed every line → it runs in alpha.</div>
+  </div>
+</section>
+
+<section id="agent">
+  <div class="wrap">
+    <p class="kicker">Session 2</p>
+    <h2>Working with the agent</h2>
+    <p class="lede">The #1 differentiator between engineers who get value from AI and those who don’t is the quality of context they provide.</p>
+    <div class="grid cols-2">
+      <div class="card"><h3>Point it at the code</h3><p>Run it inside the repo. Name services and files: “in tk-hotel-main, the booking handler” beats “my API”.</p></div>
+      <div class="card"><h3>Paste the real evidence</h3><p>The exact error, full stack trace, failing request/response, expected behaviour. Sanitise customer data first.</p></div>
+      <div class="card"><h3>Feed it the contract</h3><p>Supplier API docs, a real (sanitised) Jazeera or RezLive payload, the ticket text — it can’t guess our integrations.</p></div>
+      <div class="card"><h3>Maintain CLAUDE.md</h3><p>Stack, run commands, conventions, gotchas per repo. Ten minutes of upkeep pays off every single session.</p></div>
+    </div>
+
+    <h2 style="font-size: 22px;">Anatomy of a good dev prompt</h2>
+    <ol class="steps">
+      <li><span class="t">Goal<small>What outcome, exactly?</small></span><span class="d">“Fix the 500 on POST /bookings when a guest books two rooms”</span></li>
+      <li><span class="t">Context<small>Code, errors, payloads</small></span><span class="d">“Stack trace below; booking flow is mock → rezlive → hotel-main”</span></li>
+      <li><span class="t">Constraints<small>Stack, style, versions</small></span><span class="d">“Node 25, our existing error-handler pattern; don’t touch the rezlive client”</span></li>
+      <li><span class="t">Definition of done<small>How we’ll know it works</small></span><span class="d">“Write a failing test first; all tests green; no new dependencies”</span></li>
+      <li><span class="t">Scope limit<small>What NOT to do</small></span><span class="d">“No refactors outside this handler; no schema changes”</span></li>
+    </ol>
+
+    <h2 style="font-size: 22px;">Same bug, two prompts</h2>
+    <div class="compare">
+      <div class="pane weak">
+        <div class="label">Weak</div>
+        <pre>fix the bug in hotel booking</pre>
+        <p>It guesses which bug, guesses the design, touches files you didn’t want touched — and you spend the afternoon reviewing a sprawling diff.</p>
+      </div>
+      <div class="pane strong">
+        <div class="label">Strong</div>
+        <pre>In tk-hotel-main, POST /bookings returns 500 when a
+guest books 2 rooms in one order. Stack trace below.
+Expected: one booking with two room entries.
+Reproduce with a failing integration test first, then
+fix. Don't modify the rezlive client. Run the full
+suite when done.</pre>
+        <p>60 seconds of prompt-writing buys you a small, reviewable, tested diff.</p>
+      </div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="card"><h3>Plan before big changes</h3><p>For multi-file work, ask for a plan first and correct it before any code is written — cheaper than reviewing wrong code.</p></div>
+      <div class="card"><h3>Iterate on the diff</h3><p>“Extract that into the service layer”, “handle the null supplier case”, “match our error-handler pattern” — refine, don’t restart.</p></div>
+      <div class="card"><h3>Make it prove it</h3><p>“Write the failing test first.” “Run the suite.” “Show me the output.” Evidence beats confidence, every time.</p></div>
+      <div class="card"><h3>Keep diffs small</h3><p>One concern per session. A 1,500-line AI diff isn’t productivity — it’s an unreviewable liability.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="guardrails">
+  <div class="wrap">
+    <p class="kicker danger">Guardrails</p>
+    <h2>Never in a prompt</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Class</th><th>What it covers</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr class="g"><td class="cls">GREEN</td><td>Our source code (per repo policy) · sanitised stack traces &amp; logs · redacted payloads (&lt;NAME&gt;, &lt;PNR&gt;) · fixtures &amp; dummy data · public docs</td><td>Use freely in approved tools</td></tr>
+          <tr class="a"><td class="cls">AMBER</td><td>Real logs and payloads (may hide passenger names, phones, PNRs) · internal docs · incident threads</td><td>Strip identifiers first</td></tr>
+          <tr class="r"><td class="cls">RED</td><td>API keys, tokens, passwords, <code>.env</code>, connection strings, AWS/SSH credentials · production DB dumps · customer PII (passports, cards, contact lists)</td><td>Never. Pasted by mistake? Rotate the key and tell your lead the same day</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="font-size: 22px;">Danger zones — AI drafts, seniors approve</h2>
+    <div class="grid cols-2">
+      <div class="card warn"><h3>Payments</h3><p>tk-payment-core and anything touching money movement or refunds — full senior review, no exceptions.</p></div>
+      <div class="card warn"><h3>DB migrations</h3><p>Schema changes on Console-DB and service DBs: review + backup + run in alpha before anywhere real.</p></div>
+      <div class="card warn"><h3>Auth &amp; sessions</h3><p>Login, tokens, permissions, agent access levels — subtle AI mistakes here become security incidents.</p></div>
+      <div class="card warn"><h3>Deploy &amp; infra</h3><p>The GitHub→alpha pipeline, runner config, AWS changes — a wrong script takes down every environment at once.</p></div>
+    </div>
+    <p class="aside">In these areas AI is a drafting tool only — a named senior engineer signs off before merge, and nothing auto-runs against real systems.</p>
+  </div>
+</section>
+
+<section id="tracks">
+  <div class="wrap">
+    <p class="kicker">AI on our stack</p>
+    <h2>Your track</h2>
+    <div class="grid cols-3">
+      <div class="card">
+        <span class="tag">Backend services</span>
+        <p><strong>Supplier integrations</strong> — paste the real (sanitised) Jazeera/RezLive payload and contract; generate client + DTOs + mappers + tests.<br><br>
+        <strong>Cross-service work</strong> — trace a booking across mock → rezlive → hotel-main, then change with confidence.<br><br>
+        <strong>Test debt &amp; logs</strong> — write missing cases for under-tested modules; feed sanitised alpha logs to find intermittent 5xx patterns.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Flutter &amp; mobile</span>
+        <p><strong>Screens &amp; widgets</strong> — scaffold new screens matching existing patterns; point it at a similar screen first.<br><br>
+        <strong>API wiring</strong> — models and client code straight from a (sanitised) backend payload.<br><br>
+        <strong>Platform quirks &amp; tests</strong> — paste the exact build log; generate widget and golden tests alongside every screen. State versions from <code>pubspec.yaml</code> or it will suggest deprecated APIs.</p>
+      </div>
+      <div class="card">
+        <span class="tag">DevOps &amp; infra</span>
+        <p><strong>Pipeline work</strong> — GitHub Actions for the alpha runner, drafted by AI, reviewed line-by-line.<br><br>
+        <strong>AWS chores</strong> — DLM policies, IAM tweaks, cost scripts: generate, dry-run, review, then apply.<br><br>
+        <strong>Ops &amp; incidents</strong> — alpha-ops scripting (versioned and reviewed) and incident-thread → post-mortem timelines. Never paste AWS credentials.</p>
+      </div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="card"><h3>CLAUDE.md in every repo</h3><p>Stack, commands, conventions, known gotchas. Reviewed like code; updated when the answer to “why did it do that?” is missing context.</p></div>
+      <div class="card"><h3>Shared pattern library</h3><p>Prompts and workflows that worked — supplier-integration recipe, migration checklist, debug playbook — in one shared doc per track.</p></div>
+      <div class="card"><h3>15 minutes weekly</h3><p>One engineer demos an AI-assisted win (or instructive failure) in the team sync. Cheap, compounding knowledge transfer.</p></div>
+      <div class="card"><h3>Measure honestly</h3><p>PR cycle time, coverage trend, escaped bugs. If quality dips, we fix the workflow — not by quietly abandoning the tools.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="rules">
+  <div class="wrap">
+    <p class="kicker">Wrap-up</p>
+    <h2>Five rules to remember</h2>
+    <ol class="steps rules">
+      <li><span class="t">You own what you merge</span><span class="d">Same review bar, tests pass, you understand every line. “The AI wrote it” is never an explanation.</span></li>
+      <li><span class="t">No secrets, no customer data</span><span class="d">Keys, tokens, .env, prod dumps, passenger PII — never in a prompt. Fixtures and redacted samples instead.</span></li>
+      <li><span class="t">Verify against the source of truth</span><span class="d">Real API contracts, installed versions, actual runtime behaviour. Run the code; don’t trust the prose.</span></li>
+      <li><span class="t">Small, tested, reviewable steps</span><span class="d">Failing test first, one concern per diff. Never merge a diff too big to review properly.</span></li>
+      <li><span class="t">Danger zones get senior eyes</span><span class="d">Payments, migrations, auth, deploy/infra — AI drafts, a named senior approves.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="programme">
+  <div class="wrap">
+    <p class="kicker">Logistics</p>
+    <h2>Programme &amp; certification</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Week</th><th>Session</th><th>Audience</th><th>Format</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>S1 — Fundamentals, failure modes &amp; guardrails</td><td>All engineers</td><td>90 min · presentation + live demo</td></tr>
+          <tr><td>2</td><td>S2 — Claude Code lab: one real ticket end-to-end</td><td>All engineers</td><td>2 h · hands-on (bring a ticket)</td></tr>
+          <tr><td>3</td><td>Track workshops: Backend · Flutter · DevOps (parallel)</td><td>By track</td><td>90 min · real backlog tickets</td></tr>
+          <tr><td>3</td><td>Leads briefing — reviewing AI-assisted PRs</td><td>Tech leads</td><td>60 min · discussion + checklist</td></tr>
+          <tr><td>4</td><td>Certification — AI-assisted PR + quiz + policy sign-off</td><td>All engineers</td><td>Self-paced + 30 min</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede">Certification is practical: ship one AI-assisted PR through normal review — with tests, a reviewable diff, and a PR note on what was AI-assisted — then pass the quiz below (8/10) and sign the one-page policy. That makes you <strong>“Tathkarah AI-Ready”</strong>.</p>
+  </div>
+</section>
+
+<section id="quiz">
+  <div class="wrap">
+    <p class="kicker">Self-check</p>
+    <h2>Practice quiz</h2>
+    <p class="lede">Ten questions, pass mark 8/10. This mirrors the week-4 certification quiz — grade yourself as many times as you like.</p>
+    <form class="quiz" id="quizForm">
+      <fieldset data-answer="b">
+        <legend>1. The AI describes a field in the Jazeera ServiceBundlesInfo response that you don’t recognise. What do you do?</legend>
+        <label><input type="radio" name="q1" value="a"> Use it — the model has seen the API before</label>
+        <label data-opt="b"><input type="radio" name="q1" value="b"> Check the real API response / our integration notes; paste the actual (sanitised) payload into the prompt and continue from that</label>
+        <label><input type="radio" name="q1" value="c"> Ask the AI to confirm the field exists</label>
+        <label><input type="radio" name="q1" value="d"> Add defensive code in case the field is missing</label>
+      </fieldset>
+      <fieldset data-answer="c">
+        <legend>2. Which of these may go into a prompt as-is?</legend>
+        <label><input type="radio" name="q2" value="a"> The service’s .env file, to explain the config</label>
+        <label><input type="radio" name="q2" value="b"> A production DB dump of last week’s bookings</label>
+        <label data-opt="c"><input type="radio" name="q2" value="c"> A sanitised stack trace plus a redacted request payload (&lt;NAME&gt;, &lt;PNR&gt;)</label>
+        <label><input type="radio" name="q2" value="d"> Your AWS access key, since it’s read-only</label>
+      </fieldset>
+      <fieldset data-answer="c">
+        <legend>3. An AI-generated bug fix is ready to merge when:</legend>
+        <label><input type="radio" name="q3" value="a"> The code compiles and looks clean</label>
+        <label><input type="radio" name="q3" value="b"> The AI says it’s correct and explains why</label>
+        <label data-opt="c"><input type="radio" name="q3" value="c"> A failing test reproduced the bug first, the fix makes the suite green, and you’ve reviewed and understood every line</label>
+        <label><input type="radio" name="q3" value="d"> Another AI session reviews it and approves</label>
+      </fieldset>
+      <fieldset data-answer="b">
+        <legend>4. The AI writes a migration that renames a column on Console-DB. The SQL looks clean. Next step?</legend>
+        <label><input type="radio" name="q4" value="a"> Run it — column renames are routine</label>
+        <label data-opt="b"><input type="radio" name="q4" value="b"> Senior review + backup + run it in alpha before anywhere real</label>
+        <label><input type="radio" name="q4" value="c"> Run it at night when traffic is low</label>
+        <label><input type="radio" name="q4" value="d"> Ask the AI to double-check its own SQL</label>
+      </fieldset>
+      <fieldset data-answer="c">
+        <legend>5. Which prompt will produce the best result for a bug fix?</legend>
+        <label><input type="radio" name="q5" value="a"> “fix the bug in hotel booking”</label>
+        <label><input type="radio" name="q5" value="b"> “there’s a 500 error somewhere, please investigate everything”</label>
+        <label data-opt="c"><input type="radio" name="q5" value="c"> “In tk-hotel-main, POST /bookings 500s when a guest books 2 rooms; stack trace below; expected one booking with two room entries; write a failing test first; don’t touch the rezlive client”</label>
+        <label><input type="radio" name="q5" value="d"> “rewrite the booking module so it has no bugs”</label>
+      </fieldset>
+      <fieldset data-answer="b">
+        <legend>6. The AI suggests a better-sqlite3 API that doesn’t exist in our installed version. What went wrong, and what’s the fix?</legend>
+        <label><input type="radio" name="q6" value="a"> The library is broken — downgrade it</label>
+        <label data-opt="b"><input type="radio" name="q6" value="b"> Version drift: its training data is stale. State the installed version from package.json in the prompt and ask again</label>
+        <label><input type="radio" name="q6" value="c"> Nothing — install the newer version it assumed</label>
+        <label><input type="radio" name="q6" value="d"> AI can’t be used with this library</label>
+      </fieldset>
+      <fieldset data-answer="c">
+        <legend>7. You accidentally pasted a live API key into a prompt. What now?</legend>
+        <label><input type="radio" name="q7" value="a"> Delete the chat — that removes the risk</label>
+        <label><input type="radio" name="q7" value="b"> Nothing; approved tools are safe by definition</label>
+        <label data-opt="c"><input type="radio" name="q7" value="c"> Rotate the key and tell your lead the same day</label>
+        <label><input type="radio" name="q7" value="d"> Wait to see if the key is misused</label>
+      </fieldset>
+      <fieldset data-answer="c">
+        <legend>8. Claude Code proposes a 1,500-line diff across 14 files for what you thought was a small change. Best response?</legend>
+        <label><input type="radio" name="q8" value="a"> Merge it — big diffs mean big productivity</label>
+        <label><input type="radio" name="q8" value="b"> Skim the important-looking parts and merge</label>
+        <label data-opt="c"><input type="radio" name="q8" value="c"> Stop; go back to a plan, split the work into small single-concern diffs, and re-run with a tighter scope limit</label>
+        <label><input type="radio" name="q8" value="d"> Ask the AI to review its own diff thoroughly</label>
+      </fieldset>
+      <fieldset data-answer="b">
+        <legend>9. Which changes always need a named senior engineer’s approval when AI-assisted?</legend>
+        <label><input type="radio" name="q9" value="a"> Any change to a README</label>
+        <label data-opt="b"><input type="radio" name="q9" value="b"> Payments (tk-payment-core), DB migrations, auth/session code, deploy &amp; infra scripts</label>
+        <label><input type="radio" name="q9" value="c"> Flutter UI tweaks</label>
+        <label><input type="radio" name="q9" value="d"> Test-only changes</label>
+      </fieldset>
+      <fieldset data-answer="b">
+        <legend>10. Before starting a multi-file feature with Claude Code, the highest-leverage first step is:</legend>
+        <label><input type="radio" name="q10" value="a"> Start coding immediately — momentum matters</label>
+        <label data-opt="b"><input type="radio" name="q10" value="b"> Ask it for an implementation plan and correct the plan before any code is written</label>
+        <label><input type="radio" name="q10" value="c"> Write all the code yourself, then ask AI to add comments</label>
+        <label><input type="radio" name="q10" value="d"> Disable tests temporarily to move faster</label>
+      </fieldset>
+      <div class="actions">
+        <button type="button" class="btn" id="gradeBtn">Grade my answers</button>
+        <button type="button" class="btn ghost" id="resetBtn">Reset</button>
+        <span id="quiz-result" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Questions any time:</strong> your track’s AI champion · <a href="mailto:admin@tathkarah.in">admin@tathkarah.in</a></p>
+    <p>Companion materials: training plan (docx) · session deck (pptx) · quick-reference &amp; policy one-pager · certification quiz. Prepared July 2026 · reviewed quarterly.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var form = document.getElementById("quizForm");
+    var result = document.getElementById("quiz-result");
+    document.getElementById("gradeBtn").addEventListener("click", function () {
+      var sets = form.querySelectorAll("fieldset");
+      var score = 0, answered = 0;
+      sets.forEach(function (fs) {
+        fs.classList.remove("correct", "incorrect");
+        var picked = fs.querySelector("input:checked");
+        if (picked) answered++;
+        if (picked && picked.value === fs.dataset.answer) {
+          score++;
+          fs.classList.add("correct");
+        } else {
+          fs.classList.add("incorrect");
+        }
+      });
+      if (answered < sets.length) {
+        result.className = "fail";
+        result.textContent = "Answer all " + sets.length + " questions (" + (sets.length - answered) + " left) — unanswered count as wrong.";
+      }
+      var pass = score >= 8;
+      var verdict = pass ? " — pass! You're quiz-ready for certification." : " — below the 8/10 pass mark. Review the highlighted answers and retake.";
+      if (answered === sets.length) {
+        result.className = pass ? "pass" : "fail";
+        result.textContent = "Score: " + score + "/" + sets.length + verdict;
+      }
+      result.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+    document.getElementById("resetBtn").addEventListener("click", function () {
+      form.reset();
+      form.querySelectorAll("fieldset").forEach(function (fs) { fs.classList.remove("correct", "incorrect"); });
+      result.textContent = "";
+      result.className = "";
+    });
+  })();
+</script>

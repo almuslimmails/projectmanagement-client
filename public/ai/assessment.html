@@ -1,0 +1,370 @@
+<title>Tathkarah · AI Foundations Assessment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --ground: #F7F5F0; --panel: #FFFDF7; --ink: #1B1E24; --ink-soft: #3C414C;
+    --muted: #74788A; --muted-2: #A8ABB8; --rule: #E4DFD1; --rule-strong: #C7C0AC;
+    --accent: #2E5D7B; --ochre: #B87D3A; --ochre-soft: #F2E8D4;
+    --good: #3E7A4D; --crit: #B04A3B; --crit-soft: #F2DBD5; --code-bg: #EEE9DA;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  }
+  :root[data-theme="light"] {
+    --ground: #F7F5F0; --panel: #FFFDF7; --ink: #1B1E24; --ink-soft: #3C414C;
+    --muted: #74788A; --muted-2: #A8ABB8; --rule: #E4DFD1; --rule-strong: #C7C0AC;
+    --accent: #2E5D7B; --ochre: #B87D3A; --ochre-soft: #F2E8D4;
+    --good: #3E7A4D; --crit: #B04A3B; --crit-soft: #F2DBD5; --code-bg: #EEE9DA;
+  }
+
+  html { background: var(--ground); }
+  body { font-family: var(--sans); color: var(--ink); line-height: 1.55; font-size: 15px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 48px 32px 96px; }
+
+  /* Cover */
+  .cover { padding-bottom: 32px; border-bottom: 1.5px solid var(--rule-strong); margin-bottom: 36px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 12px; }
+  .eyebrow .sep { color: var(--muted-2); margin: 0 8px; }
+  .title { font-family: var(--serif); font-weight: 500; font-size: 40px; line-height: 1.1; color: var(--ink); margin: 0 0 12px; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink-soft); margin: 0; text-wrap: balance; }
+
+  /* Candidate box */
+  .candidate { background: var(--panel); border: 1px solid var(--rule-strong); padding: 22px 26px; margin: 28px 0 36px; }
+  .candidate-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 14px; }
+  .candidate-row:last-child { margin-bottom: 0; }
+  .cand-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+  .cand-field { border-bottom: 1px solid var(--ink-soft); min-height: 24px; font-family: var(--serif); font-size: 16px; }
+
+  /* Instructions */
+  .instructions { background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--accent); padding: 20px 24px; margin-bottom: 36px; }
+  .instructions h2 { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; font-weight: 700; }
+  .instructions ol { margin: 0; padding-left: 22px; }
+  .instructions li { margin-bottom: 6px; font-size: 14px; color: var(--ink); line-height: 1.55; }
+  .instructions li:last-child { margin-bottom: 0; }
+
+  /* Section */
+  section { margin-bottom: 44px; }
+  .sec-head { padding-bottom: 12px; border-bottom: 1.5px solid var(--rule-strong); margin-bottom: 22px; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .sec-label { font-family: var(--serif); font-style: italic; color: var(--ochre); font-size: 15px; letter-spacing: 0.02em; }
+  .sec-title { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--ink); margin: 4px 0 0; letter-spacing: -0.005em; text-wrap: balance; }
+  .sec-meta { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; white-space: nowrap; }
+  .sec-intro { color: var(--ink-soft); font-size: 14px; margin: 0 0 18px; }
+
+  /* Question */
+  .q { padding: 16px 0; border-bottom: 1px dotted var(--rule); }
+  .q:last-child { border-bottom: none; }
+  .q-num { font-family: var(--serif); font-weight: 500; color: var(--ochre); margin-right: 8px; }
+  .q-text { color: var(--ink); font-size: 14px; margin: 0 0 10px; line-height: 1.55; }
+  .q-text code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+  .q-scenario { font-family: var(--mono); font-size: 12px; background: var(--code-bg); padding: 10px 14px; margin: 8px 0; white-space: pre-wrap; line-height: 1.5; color: var(--ink); }
+  .q-answer-line { border-bottom: 1px solid var(--muted-2); min-height: 24px; margin: 8px 0 4px; }
+  .q-answer-box { border: 1px solid var(--muted-2); min-height: 100px; padding: 8px; margin: 8px 0 4px; font-family: var(--mono); font-size: 12px; }
+  .q-points { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; float: right; }
+  .yn-marks { display: inline-flex; gap: 24px; margin-top: 4px; font-family: var(--serif); font-size: 18px; }
+  .yn-marks label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: var(--ink); }
+  .yn-marks input { transform: scale(1.2); }
+
+  /* Score box */
+  .score-box { border: 2px solid var(--ink); padding: 20px 24px; margin: 36px 0 20px; background: var(--panel); }
+  .score-title { font-family: var(--serif); font-weight: 500; font-size: 18px; color: var(--ink); margin: 0 0 14px; }
+  .score-row { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; padding: 6px 0; border-top: 1px dotted var(--rule); font-size: 14px; color: var(--ink-soft); align-items: baseline; }
+  .score-row:first-of-type { border-top: none; }
+  .score-row .score-in { border-bottom: 1px solid var(--ink-soft); min-width: 40px; text-align: right; font-family: var(--serif); }
+  .score-row.total { border-top: 2px solid var(--ink); margin-top: 8px; padding-top: 12px; font-family: var(--serif); font-weight: 500; color: var(--ink); font-size: 18px; }
+  .grade-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+  .grade-row .grade-cell { border: 1px solid var(--rule-strong); padding: 12px 16px; }
+  .grade-cell-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+  .grade-cell-line { border-bottom: 1px solid var(--ink-soft); min-height: 26px; font-family: var(--serif); font-size: 18px; padding-top: 4px; }
+
+  footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--rule-strong); font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 13px; text-align: center; }
+
+  @media print {
+    section { page-break-inside: avoid; }
+    .q { page-break-inside: avoid; }
+    body { font-size: 12pt; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="cover">
+    <p class="eyebrow">Assessment · AI Foundations · Week 2 checkpoint</p>
+    <h1 class="title">Tathkarah AI Foundations — assessment.</h1>
+    <p class="subtitle">Based on the AI Foundations Workbook. Take without notes. Answer honestly — the point is to find gaps, not to grade you.</p>
+  </header>
+
+  <div class="candidate">
+    <div class="candidate-row">
+      <div><div class="cand-label">Name</div><div class="cand-field">&nbsp;</div></div>
+      <div><div class="cand-label">Role</div><div class="cand-field">&nbsp;</div></div>
+    </div>
+    <div class="candidate-row">
+      <div><div class="cand-label">Date</div><div class="cand-field">&nbsp;</div></div>
+      <div><div class="cand-label">Proctor</div><div class="cand-field">&nbsp;</div></div>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <h2>Instructions</h2>
+    <ol>
+      <li>Time budget: <strong>60 minutes</strong>. If you finish earlier, review your answers.</li>
+      <li>No workbook, no Claude Code, no Google. This measures what you can do without tools.</li>
+      <li>Sections A–C are quick judgments. Sections D–E take longer.</li>
+      <li>If you're unsure, write your best answer and mark the question number with a <code>?</code>. Uncertainty is data.</li>
+      <li>Total: 50 points. Pass at 40. Below 30 = revisit modules before Week 3.</li>
+    </ol>
+  </div>
+
+  <!-- =============================================== SECTION A -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">Section A</div>
+        <h2 class="sec-title">Appropriate use — Y or N.</h2>
+      </div>
+      <div class="sec-meta">5 questions · 5 pts</div>
+    </div>
+    <p class="sec-intro">Mark each Y (appropriate use of AI on Tathkarah work) or N (not appropriate). 1 point each.</p>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">A1.</span> Paste our production Redis password into ChatGPT to ask why the connection is slow.</p>
+      <div class="yn-marks"><label><input type="radio" name="a1"> Y</label><label><input type="radio" name="a1"> N</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">A2.</span> Ask Claude to summarize a 200-line stack trace from tk-flight-jazeera.</p>
+      <div class="yn-marks"><label><input type="radio" name="a2"> Y</label><label><input type="radio" name="a2"> N</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">A3.</span> Have Claude generate a first draft of test cases for the new coupon endpoint.</p>
+      <div class="yn-marks"><label><input type="radio" name="a3"> Y</label><label><input type="radio" name="a3"> N</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">A4.</span> Ask Claude the current exchange rate for KWD → USD to display in the app.</p>
+      <div class="yn-marks"><label><input type="radio" name="a4"> Y</label><label><input type="radio" name="a4"> N</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">A5.</span> Ask Claude to compute the total commission across yesterday's 4,713 bookings from our database.</p>
+      <div class="yn-marks"><label><input type="radio" name="a5"> Y</label><label><input type="radio" name="a5"> N</label></div>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION B -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">Section B</div>
+        <h2 class="sec-title">Security judgment — safe or not safe.</h2>
+      </div>
+      <div class="sec-meta">5 questions · 10 pts</div>
+    </div>
+    <p class="sec-intro">Mark SAFE or NOT SAFE to paste into a public AI tool. 2 points each — this is where mistakes cost real money.</p>
+
+    <div class="q">
+      <span class="q-points">2 pts</span>
+      <p class="q-text"><span class="q-num">B1.</span> The Go source of <code>handlers/booking.go</code> with all imports and function bodies visible.</p>
+      <div class="yn-marks"><label><input type="radio" name="b1"> Safe</label><label><input type="radio" name="b1"> Not safe</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">2 pts</span>
+      <p class="q-text"><span class="q-num">B2.</span> A production log line:</p>
+      <div class="q-scenario">connect failed: postgres://tkdev:Pr0d_Passw0rd@10.0.4.12:5432/tathkarah</div>
+      <div class="yn-marks"><label><input type="radio" name="b2"> Safe</label><label><input type="radio" name="b2"> Not safe</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">2 pts</span>
+      <p class="q-text"><span class="q-num">B3.</span> A screenshot of the customer's booking confirmation email showing name, phone, PNR, and amount.</p>
+      <div class="yn-marks"><label><input type="radio" name="b3"> Safe</label><label><input type="radio" name="b3"> Not safe</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">2 pts</span>
+      <p class="q-text"><span class="q-num">B4.</span> The stack trace from a Go panic with only file paths, function names, and line numbers.</p>
+      <div class="yn-marks"><label><input type="radio" name="b4"> Safe</label><label><input type="radio" name="b4"> Not safe</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">2 pts</span>
+      <p class="q-text"><span class="q-num">B5.</span> A CSV export of last month's failed transactions with masked card numbers but real customer emails.</p>
+      <div class="yn-marks"><label><input type="radio" name="b5"> Safe</label><label><input type="radio" name="b5"> Not safe</label></div>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION C -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">Section C</div>
+        <h2 class="sec-title">Spot the hallucination.</h2>
+      </div>
+      <div class="sec-meta">5 questions · 5 pts</div>
+    </div>
+    <p class="sec-intro">For each AI answer below, mark TRUE (likely correct) or FABRICATED (likely wrong). 1 point each.</p>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">C1.</span> "To rotate KeyDB keys older than 30 days, use the <code>KEYDB.PRUNE 30d</code> command."</p>
+      <div class="yn-marks"><label><input type="radio" name="c1"> True</label><label><input type="radio" name="c1"> Fabricated</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">C2.</span> "Go 1.22 introduced range-over-int in for loops. So <code>for i := range 10</code> is valid."</p>
+      <div class="yn-marks"><label><input type="radio" name="c2"> True</label><label><input type="radio" name="c2"> Fabricated</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">C3.</span> "In micro/go-micro/v2, <code>config.Get(a, b, c)</code> navigates nested keys."</p>
+      <div class="yn-marks"><label><input type="radio" name="c3"> True</label><label><input type="radio" name="c3"> Fabricated</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">C4.</span> "The Flutter <code>Column</code> widget has an <code>alignment</code> parameter that positions all children."</p>
+      <div class="yn-marks"><label><input type="radio" name="c4"> True</label><label><input type="radio" name="c4"> Fabricated</label></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">1 pt</span>
+      <p class="q-text"><span class="q-num">C5.</span> "MongoDB 6 removed the <code>db.eval()</code> function."</p>
+      <div class="yn-marks"><label><input type="radio" name="c5"> True</label><label><input type="radio" name="c5"> Fabricated</label></div>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION D -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">Section D</div>
+        <h2 class="sec-title">Prompt writing.</h2>
+      </div>
+      <div class="sec-meta">8 questions · 24 pts</div>
+    </div>
+    <p class="sec-intro">Rewrite each bad prompt into a good one — grounded in Tathkarah's stack. 3 points each. Scored on: context (1 pt), specificity (1 pt), constraints/format (1 pt).</p>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D1.</span> Rewrite: <em>"add caching to the search endpoint"</em></p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D2.</span> Rewrite (context: tk-flutter-mobile-app home screen hotel tile): <em>"make the tile bigger"</em></p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D3.</span> Rewrite: <em>"debug why it's slow"</em></p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D4.</span> Write the prompt to ask Claude to diagnose this panic:</p>
+      <div class="q-scenario">panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation]
+goroutine 1 [running]:
+github.com/eko/gocache/v2/cache.(*LoadableCache).Set(0xc000434c00?, ...)
+tk-flight-jazeera/service/common.InitJ9(...) service/common/client.go:98</div>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D5.</span> The hotel search on tk-hotel-main went from ~400ms to ~3s in dev with no obvious change. Write the prompt.</p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D6.</span> Write the prompt to add a GET <code>/health</code> endpoint to tk-payment-tap that reports the last upstream call time.</p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D7.</span> Write the prompt for a QA to generate 15 test scenarios focused on Arabic name input (with hamza edge cases) on the flight passenger form.</p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <span class="q-points">3 pts</span>
+      <p class="q-text"><span class="q-num">D8.</span> Write the prompt for a server admin diagnosing a slow alpha-flight VPN host (Ubuntu, several tk-* services under systemd).</p>
+      <div class="q-answer-box"></div>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION E -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <div class="sec-label">Section E · Take-home</div>
+        <h2 class="sec-title">One real task, done with Claude Code.</h2>
+      </div>
+      <div class="sec-meta">1 task · 6 pts</div>
+    </div>
+    <p class="sec-intro">Pick one task from your last week you did manually — a code review, a bug diagnosis, a small refactor, writing tests. Redo it inside Claude Code. Submit a short writeup (below, or attach a document).</p>
+
+    <div class="q">
+      <p class="q-text"><strong>Original task (one sentence):</strong></p>
+      <div class="q-answer-line"></div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><strong>Time original / time with Claude Code:</strong></p>
+      <div class="q-answer-line"></div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><strong>What Claude did well:</strong></p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><strong>What Claude got wrong or missed — and how you noticed:</strong></p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><strong>Would you use AI for this type of task again? Why or why not:</strong></p>
+      <div class="q-answer-box"></div>
+    </div>
+
+    <p style="font-size: 12px; color: var(--muted); font-style: italic; margin-top: 12px;">Scoring: 2 pts for completing the task · 2 pts for identifying at least one real AI mistake · 2 pts for honest reflection on future use.</p>
+  </section>
+
+  <!-- =============================================== SCORE BOX -->
+  <div class="score-box">
+    <h3 class="score-title">Proctor use only — scoring</h3>
+    <div class="score-row"><span>Section A · Appropriate use</span><span class="score-in">&nbsp;</span><span>/ 5</span></div>
+    <div class="score-row"><span>Section B · Security judgment</span><span class="score-in">&nbsp;</span><span>/ 10</span></div>
+    <div class="score-row"><span>Section C · Hallucination detection</span><span class="score-in">&nbsp;</span><span>/ 5</span></div>
+    <div class="score-row"><span>Section D · Prompt writing</span><span class="score-in">&nbsp;</span><span>/ 24</span></div>
+    <div class="score-row"><span>Section E · Applied task</span><span class="score-in">&nbsp;</span><span>/ 6</span></div>
+    <div class="score-row total"><span>Total</span><span class="score-in">&nbsp;</span><span>/ 50</span></div>
+
+    <div class="grade-row">
+      <div class="grade-cell"><div class="grade-cell-label">Grade</div><div class="grade-cell-line">&nbsp;</div></div>
+      <div class="grade-cell"><div class="grade-cell-label">Modules to revisit</div><div class="grade-cell-line">&nbsp;</div></div>
+    </div>
+  </div>
+
+  <footer>
+    An assessment measures what a workbook teaches. Both are drafts of a system that improves with each cohort.
+    <div style="font-family: var(--sans); font-style: normal; text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; color: var(--muted-2); margin-top: 6px;">Tathkarah · AI Foundations Assessment · Draft 01</div>
+  </footer>
+
+</div>

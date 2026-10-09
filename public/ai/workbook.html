@@ -1,0 +1,720 @@
+<title>Tathkarah · AI Foundations workbook</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --ground: #F7F5F0;
+    --panel: #FFFDF7;
+    --ink: #1B1E24;
+    --ink-soft: #3C414C;
+    --muted: #74788A;
+    --muted-2: #A8ABB8;
+    --rule: #E4DFD1;
+    --rule-strong: #C7C0AC;
+    --accent: #2E5D7B;
+    --accent-soft: #4A7D9D;
+    --ochre: #B87D3A;
+    --ochre-soft: #F2E8D4;
+    --good: #3E7A4D;
+    --good-soft: #DEEBDE;
+    --warn: #B98A1A;
+    --crit: #B04A3B;
+    --crit-soft: #F2DBD5;
+    --code-bg: #EEE9DA;
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  }
+  :root[data-theme="light"] {
+    --ground: #F7F5F0; --panel: #FFFDF7; --ink: #1B1E24; --ink-soft: #3C414C;
+    --muted: #74788A; --muted-2: #A8ABB8; --rule: #E4DFD1; --rule-strong: #C7C0AC;
+    --accent: #2E5D7B; --accent-soft: #4A7D9D; --ochre: #B87D3A; --ochre-soft: #F2E8D4;
+    --good: #3E7A4D; --good-soft: #DEEBDE; --warn: #B98A1A; --crit: #B04A3B; --crit-soft: #F2DBD5;
+    --code-bg: #EEE9DA;
+  }
+
+  html { background: var(--ground); }
+  body { font-family: var(--sans); color: var(--ink); line-height: 1.6; font-size: 15px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-feature-settings: "kern", "liga"; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 48px 28px 96px; }
+  a { color: var(--accent); }
+
+  /* Masthead */
+  .masthead { padding-bottom: 32px; border-bottom: 1px solid var(--rule-strong); margin-bottom: 36px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 12px; }
+  .eyebrow .sep { color: var(--muted-2); margin: 0 8px; }
+  .title { font-family: var(--serif); font-weight: 500; font-size: 44px; line-height: 1.08; color: var(--ink); margin: 0 0 12px; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 19px; line-height: 1.4; color: var(--ink-soft); margin: 0; max-width: 62ch; text-wrap: balance; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 22px; font-size: 13px; color: var(--muted); }
+  .meta-row .k { color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; margin-right: 6px; font-weight: 600; }
+
+  /* Table of contents */
+  .toc { background: var(--panel); border: 1px solid var(--rule); padding: 22px 26px; margin-bottom: 44px; }
+  .toc-head { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 14px; }
+  .toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
+  .toc li { counter-increment: toc; padding: 8px 0; border-top: 1px dotted var(--rule); display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: baseline; font-size: 14px; }
+  .toc li:first-child { border-top: none; }
+  .toc li::before { content: counter(toc, decimal-leading-zero); font-family: var(--serif); font-style: italic; color: var(--ochre); font-size: 13px; }
+  .toc-title { color: var(--ink); font-weight: 500; }
+  .toc-time { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+
+  /* Modules */
+  .module { margin-bottom: 64px; scroll-margin-top: 20px; }
+  .mod-head { padding-bottom: 20px; border-bottom: 1.5px solid var(--rule-strong); margin-bottom: 28px; }
+  .mod-num { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--ochre); margin-bottom: 4px; letter-spacing: 0.02em; }
+  .mod-title { font-family: var(--serif); font-weight: 500; font-size: 30px; line-height: 1.15; color: var(--ink); margin: 0 0 6px; letter-spacing: -0.01em; text-wrap: balance; }
+  .mod-goal { font-family: var(--serif); font-style: italic; color: var(--ink-soft); font-size: 15px; margin: 0; }
+
+  .module p { margin: 0 0 14px; color: var(--ink-soft); }
+  .module p.lead { font-size: 16px; color: var(--ink); }
+  .module h3 { font-family: var(--serif); font-size: 20px; font-weight: 500; color: var(--ink); margin: 28px 0 12px; letter-spacing: -0.005em; }
+  .module h4 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: var(--muted); margin: 24px 0 10px; }
+  .module strong { color: var(--ink); font-weight: 600; }
+  .module ul, .module ol { padding-left: 24px; margin: 0 0 16px; }
+  .module li { margin-bottom: 8px; color: var(--ink-soft); }
+  .module li:last-child { margin-bottom: 0; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); color: var(--ink); padding: 1px 5px; border-radius: 3px; }
+
+  /* Blocks */
+  .callout { padding: 16px 20px; margin: 20px 0; border-left: 3px solid var(--accent); background: var(--panel); font-size: 14px; }
+  .callout-tag { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .callout p { margin: 0; color: var(--ink); }
+  .callout.warn { border-left-color: var(--crit); background: var(--crit-soft); }
+  .callout.warn .callout-tag { color: var(--crit); }
+  .callout.warn p { color: var(--ink); }
+  .callout.good { border-left-color: var(--good); background: var(--good-soft); }
+  .callout.good .callout-tag { color: var(--good); }
+
+  /* Prompt comparison */
+  .prompt-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  @media (max-width: 700px) { .prompt-pair { grid-template-columns: 1fr; } }
+  .prompt-box { border: 1px solid var(--rule); padding: 14px 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+  .prompt-box.bad { background: var(--crit-soft); border-color: var(--crit); }
+  .prompt-box.good { background: var(--good-soft); border-color: var(--good); }
+  .prompt-label { font-family: var(--sans); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+  .prompt-box.bad .prompt-label { color: var(--crit); }
+  .prompt-box.good .prompt-label { color: var(--good); }
+  .prompt-why { font-family: var(--sans); font-size: 12px; color: var(--muted); font-style: italic; margin-top: 10px; padding-top: 10px; border-top: 1px dotted var(--rule); white-space: normal; }
+
+  /* Tables */
+  .tblwrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-weight: 700; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 12px 8px; border-bottom: 1.5px solid var(--rule-strong); white-space: nowrap; }
+  td { padding: 12px; border-bottom: 1px solid var(--rule); color: var(--ink-soft); vertical-align: top; line-height: 1.5; }
+  td:first-child, th:first-child { padding-left: 0; }
+  td:last-child, th:last-child { padding-right: 0; }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--ink); font-weight: 600; }
+  td.no { color: var(--crit); font-weight: 600; }
+  td.yes { color: var(--good); font-weight: 600; }
+
+  /* Cheat sheet */
+  .cheat { background: var(--panel); border: 1px solid var(--rule-strong); padding: 24px 28px; margin: 24px 0; }
+  .cheat-tag { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--ochre); margin-bottom: 8px; }
+  .cheat h3 { font-family: var(--serif); margin-top: 0 !important; }
+  .cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 14px; }
+  @media (max-width: 700px) { .cheat-grid { grid-template-columns: 1fr; } }
+  .cheat-col h4 { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 8px; }
+  .cheat-col ul { list-style: none; padding: 0; margin: 0; }
+  .cheat-col li { font-size: 13px; padding: 4px 0; color: var(--ink-soft); border-top: 1px dotted var(--rule); }
+  .cheat-col li:first-child { border-top: none; }
+  .cheat-col li code { font-size: 12px; }
+
+  /* Exercise */
+  .exercise { border: 1px solid var(--ochre); background: var(--ochre-soft); padding: 20px 24px; margin: 24px 0; }
+  .exercise-num { font-family: var(--serif); font-style: italic; color: var(--ochre); font-size: 13px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 400; }
+  .exercise h4 { font-family: var(--serif); font-size: 18px; font-weight: 500; color: var(--ink); margin: 0 0 12px; text-transform: none; letter-spacing: -0.005em; }
+  .exercise .task { margin-bottom: 12px; color: var(--ink); font-size: 14px; }
+  .exercise .task strong { color: var(--ink); }
+  .answer { background: var(--panel); border: 1px solid var(--rule); padding: 14px 18px; margin-top: 14px; }
+  .answer summary { font-family: var(--sans); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 700; cursor: pointer; user-select: none; }
+  .answer summary::-webkit-details-marker { display: none; }
+  .answer summary::before { content: "▸ "; color: var(--accent); }
+  .answer[open] summary::before { content: "▾ "; }
+  .answer[open] { padding-bottom: 18px; }
+  .answer .answer-body { margin-top: 12px; font-size: 14px; color: var(--ink); line-height: 1.6; }
+  .answer .answer-body p { color: var(--ink); margin: 0 0 8px; }
+  .answer .answer-body p:last-child { margin-bottom: 0; }
+  .answer .answer-body strong { color: var(--ink); }
+
+  /* Practice appendix */
+  .practice-item { padding: 20px 0; border-bottom: 1px solid var(--rule); }
+  .practice-item:last-child { border-bottom: none; }
+  .practice-q { font-family: var(--serif); font-size: 16px; color: var(--ink); font-weight: 500; margin: 0 0 8px; }
+  .practice-scenario { font-family: var(--mono); font-size: 12.5px; background: var(--code-bg); padding: 12px 16px; margin: 10px 0; white-space: pre-wrap; line-height: 1.5; }
+
+  footer { margin-top: 72px; padding-top: 28px; border-top: 1px solid var(--rule-strong); font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 14px; text-align: center; }
+  footer .signoff { font-family: var(--sans); font-style: normal; text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; color: var(--muted-2); margin-top: 6px; }
+
+  @media print {
+    .module { page-break-inside: avoid; }
+    .exercise, .callout, .cheat { page-break-inside: avoid; }
+    .answer { break-inside: avoid; }
+    body { font-size: 12pt; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Workbook · Team foundations · Week 1–2</p>
+    <h1 class="title">AI Foundations for the Tathkarah team.</h1>
+    <p class="subtitle">Everything the eight of us need to know before we start using AI on real Tathkarah work. Read the modules, do the exercises, keep the cheat sheets nearby. Return to this workbook whenever you're unsure.</p>
+    <div class="meta-row">
+      <span><span class="k">Audience</span> All engineers</span>
+      <span><span class="k">Time</span> ~4 hrs reading · ~4 hrs exercises</span>
+      <span><span class="k">Format</span> Self-paced · pair with weekly live sessions</span>
+    </div>
+  </header>
+
+  <div class="toc">
+    <div class="toc-head">Contents</div>
+    <ol>
+      <li><span class="toc-title">What AI actually is — and isn't</span><span class="toc-time">30 min</span></li>
+      <li><span class="toc-title">The one skill — writing a prompt that works</span><span class="toc-time">90 min</span></li>
+      <li><span class="toc-title">Driving Claude Code without getting lost</span><span class="toc-time">60 min</span></li>
+      <li><span class="toc-title">Security — what never gets pasted</span><span class="toc-time">30 min</span></li>
+      <li><span class="toc-title">Verifying — catching a confident wrong answer</span><span class="toc-time">45 min</span></li>
+      <li><span class="toc-title">Practice appendix — 20 real Tathkarah scenarios</span><span class="toc-time">work through</span></li>
+    </ol>
+  </div>
+
+  <!-- ================================================================ MODULE 1 -->
+  <div class="module" id="m1">
+    <div class="mod-head">
+      <div class="mod-num">Module 01 · Foundations</div>
+      <h2 class="mod-title">What AI actually is — and isn't.</h2>
+      <p class="mod-goal">Get the mental model right before touching the tool. Wrong mental models create wrong expectations, which create wrong outcomes.</p>
+    </div>
+
+    <p class="lead">A large language model is a <strong>pattern-completing machine</strong>. It has read a very large fraction of the text on the internet, and it is very good at predicting what word comes next given what it has seen so far. That's it. Every impressive thing you'll see it do is an emergent consequence of doing that one thing at massive scale.</p>
+
+    <h3>The four false mental models to unlearn</h3>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>What people assume</th><th>What's actually true</th></tr></thead>
+        <tbody>
+          <tr><td><strong>"It's a search engine that phrases nicely."</strong></td><td>It does not <em>look up</em> anything by default. It generates text that <em>sounds like</em> the answer, drawn from patterns it saw during training. This is why it invents.</td></tr>
+          <tr><td><strong>"It knows my codebase."</strong></td><td>It knows only what's in its context window right now. If you didn't paste your code or point Claude Code at your repo, it's guessing based on general Go idioms.</td></tr>
+          <tr><td><strong>"If it sounds confident, it's right."</strong></td><td>Confidence and correctness are unrelated. The model sounds confident because well-written text sounds confident. Verify separately.</td></tr>
+          <tr><td><strong>"It reasons like a person."</strong></td><td>It produces text that resembles reasoning. Sometimes this is functionally equivalent to reasoning. Sometimes it produces text that looks like reasoning but arrives at a wrong conclusion. You cannot tell from the output alone.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What it is genuinely great at</h3>
+    <ul>
+      <li><strong>Reading unfamiliar code fast.</strong> Paste a 300-line Go file, ask "what does this do?", get a summary a senior would take 15 minutes to write.</li>
+      <li><strong>Translation between forms.</strong> Turn a stack trace into an explanation. Turn a JSON schema into a Go struct. Turn a ticket description into a test plan.</li>
+      <li><strong>Boilerplate at scale.</strong> Ten similar functions? One prompt, ten functions, verified by hand.</li>
+      <li><strong>Second opinions.</strong> "Here's my approach — what am I missing?" is one of the most valuable prompts an experienced engineer can use.</li>
+      <li><strong>Explaining errors in plain language.</strong> Especially useful when your team's Go beginner meets a nil-pointer panic at 4pm on a Friday.</li>
+    </ul>
+
+    <h3>What it's still bad at</h3>
+    <ul>
+      <li><strong>Anything requiring live information.</strong> Current stock price, today's flight availability, your production database contents.</li>
+      <li><strong>Long chains of exact arithmetic.</strong> It will confidently compute 174 × 293 = 51,082 (correct: 50,982). Use a calculator or code for math.</li>
+      <li><strong>Novel security bugs.</strong> It knows OWASP top ten patterns; it doesn't know the specific way your payment gateway's HMAC verification is subtly wrong.</li>
+      <li><strong>Recency.</strong> Its knowledge has a cutoff date. Newer library versions, freshly-published CVEs, this week's news — treat as unknown.</li>
+      <li><strong>Deep debugging of concurrency bugs.</strong> Race conditions in production Go code need a human plus profiler.</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-tag">The one line to remember</div>
+      <p>AI is a very fast, very well-read, very confident junior colleague who never gets tired but occasionally makes things up. Treat every claim it makes the way you'd treat an unreviewed PR from a new hire.</p>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-num">Exercise 1.1</div>
+      <h4>Which of these are appropriate uses of AI on Tathkarah work?</h4>
+      <div class="task">Mark each Y (appropriate) or N (not appropriate), then check your answer.</div>
+      <ol>
+        <li>"Paste our production Redis password into ChatGPT to ask why the connection is slow."</li>
+        <li>"Ask Claude to summarize a 200-line stack trace from tk-flight-jazeera."</li>
+        <li>"Have Claude generate a first draft of test cases for the new coupon endpoint."</li>
+        <li>"Ask Claude the current exchange rate for KWD → USD to display in the app."</li>
+        <li>"Ask Claude to compute the total commission across yesterday's 4,713 bookings from our database."</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ================================================================ MODULE 2 -->
+  <div class="module" id="m2">
+    <div class="mod-head">
+      <div class="mod-num">Module 02 · The core skill</div>
+      <h2 class="mod-title">The one skill — writing a prompt that works.</h2>
+      <p class="mod-goal">If you master this and nothing else in this workbook, you'll get 80% of the value. A good prompt is the whole game.</p>
+    </div>
+
+    <p class="lead">A prompt is not a Google query. It's a brief to a colleague who has just walked into the room and knows nothing about you, your project, your yesterday, or your goal. Everything they need must be in what you say.</p>
+
+    <h3>The anatomy of a prompt that works</h3>
+    <p>Every effective prompt has some combination of these five parts. Miss the ones you need and the output degrades sharply.</p>
+
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Part</th><th>What it does</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Context</strong></td><td>Grounds the model in your situation</td><td>"I'm working on tk-flight-jazeera, Go 1.22, on feature/v4.5."</td></tr>
+          <tr><td><strong>Task</strong></td><td>The one specific thing you want done</td><td>"Add a GET /health endpoint that returns the last successful upstream call time."</td></tr>
+          <tr><td><strong>Constraints</strong></td><td>Rules the answer must obey</td><td>"Don't touch go.mod. Use zerolog. Match the existing handler pattern in main.go."</td></tr>
+          <tr><td><strong>Format</strong></td><td>How you want the answer shaped</td><td>"Give me the code diff only, no prose explanation."</td></tr>
+          <tr><td><strong>Examples</strong></td><td>Show what "good" looks like</td><td>"Similar to the /ready endpoint in tk-hotel-main line 84."</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Bad → good, using our own stack</h3>
+
+    <p><strong>Example 1 — asking about an error.</strong></p>
+    <div class="prompt-pair">
+      <div class="prompt-box bad"><div class="prompt-label">Bad</div>fix this go error</div>
+      <div class="prompt-box good"><div class="prompt-label">Good</div>I'm getting this panic on tk-flight-jazeera startup, on feature/v4.5, after we removed the tk-logger replace directive yesterday.
+
+[paste full stack trace here]
+
+What's the most likely cause? Explain your reasoning in one paragraph, then propose a specific one-line fix.</div>
+    </div>
+    <p class="prompt-why"><em>The bad one gets a generic tutorial on Go errors. The good one gets the actual diagnosis, because Claude now knows the repo, the branch, the recent change, and what shape of answer you want.</em></p>
+
+    <p><strong>Example 2 — asking for code.</strong></p>
+    <div class="prompt-pair">
+      <div class="prompt-box bad"><div class="prompt-label">Bad</div>write a hotel search endpoint</div>
+      <div class="prompt-box good"><div class="prompt-label">Good</div>In tk-hotel-main (Go, micro/go-micro/v2), add a POST /hotels/nearby endpoint that takes {lat, lng, radius_km} and queries our Typesense at localhost:8108 with a geo_distance filter.
+
+Return the same response shape as the existing /hotels/search response (see handlers/search.go). If Typesense returns no results, respond with an empty array, not an error.
+
+Match the existing handler pattern including zerolog logging and the standard error envelope.</div>
+    </div>
+    <p class="prompt-why"><em>The bad one gets a made-up endpoint using libraries you don't use. The good one produces something that actually fits your codebase.</em></p>
+
+    <p><strong>Example 3 — code review.</strong></p>
+    <div class="prompt-pair">
+      <div class="prompt-box bad"><div class="prompt-label">Bad</div>review my PR</div>
+      <div class="prompt-box good"><div class="prompt-label">Good</div>Review this PR against three specific questions:
+
+1. Does it silently swallow any error?
+2. Does it change any shared-library version in go.mod?
+3. Does it introduce a new external network call?
+
+Ignore code style. Flag only the three things above.
+
+[paste the diff]</div>
+    </div>
+    <p class="prompt-why"><em>Focused review beats general review. The bad prompt gets you 40 style nits. The good one gets you the 3 things that actually break production.</em></p>
+
+    <p><strong>Example 4 — generating tests.</strong></p>
+    <div class="prompt-pair">
+      <div class="prompt-box bad"><div class="prompt-label">Bad</div>test this function</div>
+      <div class="prompt-box good"><div class="prompt-label">Good</div>Generate table-driven Go tests for this function. Cover four cases:
+
+- happy path with a well-formed input
+- empty input string
+- input containing an Arabic name with a hamza character (ء)
+- upstream Jazeera API returns HTTP 429
+
+Match the existing test style in this repo — see any *_test.go file. Use testify/require. No mocks; use httptest.Server for the upstream case.
+
+[paste function]</div>
+    </div>
+    <p class="prompt-why"><em>Naming the edge cases matters more than any technique. If you don't list them, Claude picks generic ones and misses the Arabic/hamza edge case that will actually bite you.</em></p>
+
+    <p><strong>Example 5 — explaining code.</strong></p>
+    <div class="prompt-pair">
+      <div class="prompt-box bad"><div class="prompt-label">Bad</div>explain this code</div>
+      <div class="prompt-box good"><div class="prompt-label">Good</div>In one paragraph, explain what this function does. Assume the reader knows Go but has never seen tk-flight-jazeera. Don't repeat what the function name already says. Focus on the "why", especially around any non-obvious workaround.
+
+[paste function]</div>
+    </div>
+    <p class="prompt-why"><em>Without constraints Claude gives you a line-by-line comment stream that's useless. With them, you get the paragraph you actually needed.</em></p>
+
+    <h3>Five universal patterns that improve most prompts</h3>
+    <ol>
+      <li><strong>Say who's asking and what you already know.</strong> "I'm a backend dev familiar with Go but new to Typesense" changes the answer completely.</li>
+      <li><strong>Say what a good answer looks like.</strong> "Under 300 words." "A diff." "A bullet list." "A step-by-step plan."</li>
+      <li><strong>Give a real example, not an abstract description.</strong> "Match this style: [paste 5 lines of the existing style]" beats "match our style."</li>
+      <li><strong>Name the edge cases you care about.</strong> Claude will not think of the RTL Arabic edge case unless you say Arabic.</li>
+      <li><strong>Ask it to think before answering, for hard questions.</strong> "Think through the failure modes before proposing a fix" produces measurably better answers on complex debugging.</li>
+    </ol>
+
+    <div class="callout warn">
+      <div class="callout-tag">Anti-pattern to catch yourself doing</div>
+      <p>Chaining lots of "and also make it…" clauses in one prompt. Ten constraints in one prompt gets you an answer that satisfies five and quietly ignores five. Break into two prompts.</p>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-num">Exercise 2.1</div>
+      <h4>Rewrite these prompts.</h4>
+      <div class="task">Take each bad prompt and rewrite it into a good one, using our stack. Two are on tk-hotel-main, one on the Flutter app.</div>
+
+      <ol>
+        <li>"add caching to the search endpoint"</li>
+        <li>"make the tile bigger" <em>(context: tk-flutter-mobile-app, home screen hotel tile)</em></li>
+        <li>"debug why it's slow"</li>
+      </ol>
+    </div>
+
+    <div class="cheat">
+      <div class="cheat-tag">Cheat sheet</div>
+      <h3>Prompt patterns to memorize</h3>
+      <div class="cheat-grid">
+        <div class="cheat-col">
+          <h4>Grounding</h4>
+          <ul>
+            <li>"I'm working on <em>[repo]</em>, <em>[language]</em>, <em>[branch]</em>."</li>
+            <li>"Assume the reader knows X but not Y."</li>
+            <li>"Here's the file I care about: [paste]"</li>
+            <li>"Similar to how X handles Y in [reference]"</li>
+          </ul>
+        </div>
+        <div class="cheat-col">
+          <h4>Shape</h4>
+          <ul>
+            <li>"Under N words / one paragraph"</li>
+            <li>"Diff only / bullet list / step-by-step"</li>
+            <li>"Explain your reasoning, then answer"</li>
+            <li>"Rank by probability / severity / effort"</li>
+          </ul>
+        </div>
+        <div class="cheat-col">
+          <h4>Focus</h4>
+          <ul>
+            <li>"Flag only these three things"</li>
+            <li>"Ignore style, look at correctness"</li>
+            <li>"Focus on the why, not the what"</li>
+            <li>"Consider these edge cases: [list]"</li>
+          </ul>
+        </div>
+        <div class="cheat-col">
+          <h4>Quality boosters</h4>
+          <ul>
+            <li>"Think through failure modes first"</li>
+            <li>"What am I not asking that I should?"</li>
+            <li>"Give three options with tradeoffs"</li>
+            <li>"If uncertain, say so explicitly"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================ MODULE 3 -->
+  <div class="module" id="m3">
+    <div class="mod-head">
+      <div class="mod-num">Module 03 · The tool</div>
+      <h2 class="mod-title">Driving Claude Code without getting lost.</h2>
+      <p class="mod-goal">Claude Code is the interface. Learn its five key concepts and you can do 90% of your daily AI-assisted work in it.</p>
+    </div>
+
+    <p class="lead">Claude Code is not a chat window. It's a working environment where the model can read your files, run commands, edit code, and remember context across sessions. Think of it as a very literate pair-programmer that shares your terminal.</p>
+
+    <h3>The five key concepts</h3>
+
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Concept</th><th>What it is</th><th>When you use it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Session</strong></td><td>A conversation with Claude that can span hours. It remembers what you've done during it.</td><td>Every task starts a session. One session per topic; new task = new session.</td></tr>
+          <tr><td><strong>Memory</strong></td><td>Long-term notes Claude writes about you, your projects, your preferences. Persists across sessions.</td><td>Automatic. Read what it saved in <code>~/.claude/projects/…/memory/</code>. Ask "what do you remember about me?"</td></tr>
+          <tr><td><strong>Tools</strong></td><td>Actions Claude can take: Read a file, run Bash, edit code, fetch a URL.</td><td>Automatic — Claude picks the right tool. You approve them the first time.</td></tr>
+          <tr><td><strong>Agents</strong></td><td>Specialized sub-Claudes for focused jobs — Explore, Plan, code-reviewer.</td><td>When one task is large or benefits from a fresh context.</td></tr>
+          <tr><td><strong>Skills</strong></td><td>Pre-built workflows — /code-review, /schedule, /run.</td><td>Invoked with a slash command. Learn the ones for your role.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The five daily workflows you'll use most</h3>
+
+    <ol>
+      <li><strong>"Explain this code to me."</strong> Open Claude Code in a repo. "Read <code>handlers/search.go</code> and explain in three sentences what this handler does, then list any surprising behaviors."</li>
+      <li><strong>"Fix this specific bug."</strong> Paste the stack trace + describe recent context. Let Claude propose the fix. You review before it edits.</li>
+      <li><strong>"Add this small feature."</strong> Ground it in an existing similar feature. Ask for the diff. Review and iterate before merging.</li>
+      <li><strong>"Review this PR."</strong> Run <code>/code-review</code> or ask Claude directly with the diff. Read its findings, verify each one.</li>
+      <li><strong>"Search across the whole codebase."</strong> "Find every place we call <code>config.Get(\"hosts\", \"cache\")</code>." Faster than grep for cross-repo questions.</li>
+    </ol>
+
+    <div class="callout good">
+      <div class="callout-tag">The habit worth building</div>
+      <p>Start every new task by saying out loud what you want in one sentence, then paste the sentence to Claude. If you can't say it in one sentence, the task is too big — split it first.</p>
+    </div>
+
+    <h3>What NOT to do in Claude Code</h3>
+    <ul>
+      <li><strong>Don't let it run a destructive command without reading it first.</strong> <code>rm -rf</code>, <code>git reset --hard</code>, <code>DROP TABLE</code> — always check before approving.</li>
+      <li><strong>Don't paste live production data</strong> — logs, database rows, request bodies containing customer info. See Module 4.</li>
+      <li><strong>Don't ask it to edit files you haven't opened yourself first.</strong> You need to know the current state before it starts changing things.</li>
+      <li><strong>Don't chain 15 tasks in one prompt.</strong> One task at a time. Verify each step.</li>
+    </ul>
+
+    <div class="cheat">
+      <div class="cheat-tag">Cheat sheet</div>
+      <h3>Claude Code one-pager</h3>
+      <div class="cheat-grid">
+        <div class="cheat-col">
+          <h4>Useful slash commands</h4>
+          <ul>
+            <li><code>/help</code> — command reference</li>
+            <li><code>/code-review</code> — review the current diff</li>
+            <li><code>/run</code> — start &amp; verify the project</li>
+            <li><code>/security-review</code> — audit the current change</li>
+            <li><code>/plan</code> — design before you code</li>
+          </ul>
+        </div>
+        <div class="cheat-col">
+          <h4>When to spawn an agent</h4>
+          <ul>
+            <li><strong>Explore</strong> — cross-repo search, "where is X used"</li>
+            <li><strong>Plan</strong> — non-trivial feature design</li>
+            <li><strong>code-reviewer</strong> — heavy PR review</li>
+            <li><strong>general-purpose</strong> — anything complex &amp; multi-step</li>
+          </ul>
+        </div>
+        <div class="cheat-col">
+          <h4>Approve carefully</h4>
+          <ul>
+            <li>Any <code>rm</code>, <code>DROP</code>, <code>git reset</code></li>
+            <li>Any push to a remote branch</li>
+            <li>Any deploy or restart command</li>
+            <li>Any edit to files outside the current repo</li>
+          </ul>
+        </div>
+        <div class="cheat-col">
+          <h4>Approve freely</h4>
+          <ul>
+            <li>File reads</li>
+            <li>Grep / find in the repo</li>
+            <li>Read-only git commands (status, log, diff)</li>
+            <li>Edits to files you've been discussing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-num">Exercise 3.1</div>
+      <h4>Pick one task from your last week — redo it with Claude Code.</h4>
+      <div class="task">Choose something you did manually: a code review, a bug diagnosis, a small refactor, writing a test. Redo it inside Claude Code. Time both — original vs redo. Note where AI helped and where it didn't. Bring your notes to the Week 2 live session.</div>
+    </div>
+  </div>
+
+  <!-- ================================================================ MODULE 4 -->
+  <div class="module" id="m4">
+    <div class="mod-head">
+      <div class="mod-num">Module 04 · Security</div>
+      <h2 class="mod-title">Security — what never gets pasted.</h2>
+      <p class="mod-goal">One paste of a wrong file to a public AI can leak customer data. Learn the rules so hard that you can't accidentally violate them.</p>
+    </div>
+
+    <p class="lead">The default assumption: <strong>anything you send to any AI tool may be logged, may be reviewed by a human, may be used to train a future model, may be subpoenaed, and may leak.</strong> That's the risk model. Everything below flows from it.</p>
+
+    <h3>The never-paste list</h3>
+
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Category</th><th>Examples</th><th>Even if…</th></tr></thead>
+        <tbody>
+          <tr><td class="no">Production credentials</td><td>DB passwords, API keys, JWT signing secrets, OAuth tokens, SSH private keys, service accounts</td><td>They're "old". They're "dev". You're going to rotate them.</td></tr>
+          <tr><td class="no">Customer PII</td><td>Passport numbers, national IDs, addresses, phone numbers, real names tied to bookings, email + booking together</td><td>You anonymize the ID. Combination of "safe" fields often re-identifies.</td></tr>
+          <tr><td class="no">Booking &amp; payment data</td><td>Full PNRs, card numbers (even masked), CVV, IBAN, bank account, transaction refs</td><td>The card is expired. It's your own card. The transaction is old.</td></tr>
+          <tr><td class="no">Real logs with real data</td><td>Server logs containing user emails, session IDs, request IDs tied to real users</td><td>You "grep out the sensitive lines". You usually miss some.</td></tr>
+          <tr><td class="no">Internal URLs &amp; hostnames</td><td>Production VPN hosts, internal IPs, service URLs with embedded tokens</td><td>They're behind a firewall. Firewalls don't help if the URL itself is a secret.</td></tr>
+          <tr><td class="no">Client-privileged docs</td><td>Contracts, NDAs, internal financials, employee data, unreleased pricing</td><td>You have permission "to read them". Permission to read ≠ permission to redistribute.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The always-safe list</h3>
+
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Category</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td class="yes">Source code (except embedded secrets)</td><td>Handlers, models, config schemas — as long as you scrub any hard-coded secrets</td></tr>
+          <tr><td class="yes">Sanitized stack traces</td><td>Panics with generic values; strip anything customer-specific</td></tr>
+          <tr><td class="yes">Architecture questions</td><td>"How should we structure caching between tk-hotel-main and Typesense?" — abstract</td></tr>
+          <tr><td class="yes">Anonymized test data</td><td>Fake names, fake emails (<code>test@example.com</code>), obviously-fake card numbers</td></tr>
+          <tr><td class="yes">Public library documentation questions</td><td>"How does micro/go-micro/v2 config.Get resolve nested keys?"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The sanitization habit</h3>
+
+    <p>Before pasting any real file or log, run through this five-second check:</p>
+    <ol>
+      <li>Does this contain a value that looks like a password, key, or token? (High-entropy strings, base64 blobs, hex strings.) → Redact or refuse.</li>
+      <li>Does this contain a real person's identifying data? → Replace with fake.</li>
+      <li>Does this contain a URL or hostname that isn't public? → Replace with placeholder.</li>
+      <li>Is this a customer's actual booking, payment, or transaction record? → Never paste.</li>
+      <li>Would you post this in a public Slack channel? If no, don't paste.</li>
+    </ol>
+
+    <div class="callout warn">
+      <div class="callout-tag">The Tathkarah rule</div>
+      <p>Assume every AI-facing conversation could be attached to an exhibit in a compliance audit. If you wouldn't want a regulator reading it, sanitize it.</p>
+    </div>
+
+    <h3>Sanitization by example</h3>
+
+    <p><strong>Before:</strong></p>
+    <div class="prompt-box bad" style="font-family: var(--mono);"><div class="prompt-label">Real log — DO NOT paste</div>2026-08-05T11:23:45Z ERROR pnr=TAT8291K email=aisha.mansour@gmail.com card=****4291 status=failed reason="declined by acquirer" gateway=tap merchant_key=sk_live_a8f6...b2c1</div>
+
+    <p><strong>After sanitization — safe to paste:</strong></p>
+    <div class="prompt-box good" style="font-family: var(--mono);"><div class="prompt-label">Sanitized — safe</div>2026-08-05T11:23:45Z ERROR pnr=REDACTED email=test@example.com card=****XXXX status=failed reason="declined by acquirer" gateway=tap merchant_key=REDACTED</div>
+
+    <div class="exercise">
+      <div class="exercise-num">Exercise 4.1</div>
+      <h4>Judge each of these — safe to paste or not?</h4>
+      <ol>
+        <li>The Go source of <code>handlers/booking.go</code> with all imports and function bodies visible.</li>
+        <li>A production log line: <code>connect failed: postgres://tkdev:Pr0d_Passw0rd@10.0.4.12:5432/tathkarah</code></li>
+        <li>A screenshot of the customer's booking confirmation email showing name, phone, PNR, and amount.</li>
+        <li>The stack trace from a Go panic with only file paths, function names, and line numbers.</li>
+        <li>A CSV export of last month's failed transactions with masked card numbers but real customer emails.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ================================================================ MODULE 5 -->
+  <div class="module" id="m5">
+    <div class="mod-head">
+      <div class="mod-num">Module 05 · Verification</div>
+      <h2 class="mod-title">Verifying — catching a confident wrong answer.</h2>
+      <p class="mod-goal">Every AI answer is a hypothesis until you verify it. Learn the three ways to verify and the red flags that mean "verify this one especially carefully".</p>
+    </div>
+
+    <p class="lead">The single biggest failure mode of AI-assisted work is <strong>accepting an answer that sounds right and isn't</strong>. This module teaches you to see it coming.</p>
+
+    <h3>Why models get things confidently wrong</h3>
+    <p>The model is trained to produce plausible text. Plausibility and truth are correlated but not the same. When the model has no direct memory of the answer, it will smoothly interpolate — producing text that reads as authoritative but is fabricated. This is not lying; it's the model doing exactly what it was trained to do.</p>
+
+    <h3>The three verification patterns</h3>
+    <ol>
+      <li><strong>Run it.</strong> If it's code, execute it. If it's a command, try it in dev first. If it's a SQL query, run it against a copy.</li>
+      <li><strong>Look it up.</strong> If it cites a library function, check the library's documentation. If it cites a Go language feature, check the Go release notes. If it names a file or line number, open the file.</li>
+      <li><strong>Ask it again, differently.</strong> Phrase the same question a different way. If the two answers disagree, at least one is wrong; sometimes both.</li>
+    </ol>
+
+    <h3>Red-flag phrases that mean "verify harder"</h3>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>When Claude says…</th><th>What it often means</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr><td>"I believe…"</td><td>Uncertain — it's guessing</td><td>Verify directly.</td></tr>
+          <tr><td>"Typically…" / "Usually…"</td><td>General pattern, may not apply to your specific case</td><td>Check for your specific version/config.</td></tr>
+          <tr><td>"You should…"</td><td>Reasonable advice, not verified fact</td><td>Confirm before committing.</td></tr>
+          <tr><td>Confident specific version numbers you didn't provide</td><td>Fabricated</td><td>Cross-check against your actual go.mod or pubspec.yaml.</td></tr>
+          <tr><td>Referenced file paths you didn't share</td><td>Guessed based on convention</td><td>Ask Claude to grep for it before trusting.</td></tr>
+          <tr><td>Very long, very detailed answers to short questions</td><td>May be padding with plausibility</td><td>Ask for a shorter version to see what survives.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>A real Tathkarah example — the tk-logger diagnosis</h3>
+    <p>Last week we hit a <code>checksum mismatch</code> error building tk-flight-jazeera. Here's how the AI-assisted diagnosis went, and where verification mattered:</p>
+    <ol>
+      <li>Claude's first guess — "the go.sum has a stale hash, delete the tk-logger lines and re-tidy." → <strong>Verified by running it.</strong> Didn't fully work — surfaced a deeper issue.</li>
+      <li>Second observation — "the tk-logger v1.0.1 tag on GitHub still points at the pre-migration commit." → <strong>Verified by hitting the GitHub API directly.</strong> Confirmed true.</li>
+      <li>Real root cause — "the <code>replace</code> directive in go.mod forces the tk-logger version to the broken tag." → <strong>Verified by reading the go.mod and comparing to feature/v4.</strong> Confirmed.</li>
+      <li>Proposed fix — remove the replace directive. <strong>Verified by running <code>go build ./...</code></strong> — clean.</li>
+    </ol>
+    <p>Notice: every step involved a verification. Claude's first guess was partially wrong; the diagnosis got right by running things and reading real state, not by trusting the first answer.</p>
+
+    <div class="callout">
+      <div class="callout-tag">The habit worth building</div>
+      <p>After Claude gives you an answer, say out loud: "How would I know if this is wrong?" If you don't have an answer to that question, don't trust the AI answer yet.</p>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-num">Exercise 5.1</div>
+      <h4>Five AI answers — spot the one most likely to be a hallucination.</h4>
+      <ol>
+        <li>"To rotate KeyDB keys older than 30 days, use the <code>KEYDB.PRUNE 30d</code> command."</li>
+        <li>"Go 1.22 introduced range-over-int in for loops. So <code>for i := range 10</code> is valid."</li>
+        <li>"In micro/go-micro/v2, <code>config.Get(a, b, c)</code> navigates nested keys."</li>
+        <li>"The Flutter <code>Column</code> widget has an <code>alignment</code> parameter that positions all children."</li>
+        <li>"MongoDB 6 removed the <code>db.eval()</code> function."</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ================================================================ MODULE 6 -->
+  <div class="module" id="m6">
+    <div class="mod-head">
+      <div class="mod-num">Module 06 · The rhythm</div>
+      <h2 class="mod-title">The practice loop — after this workbook.</h2>
+      <p class="mod-goal">Skills learned in a workbook decay in weeks unless practiced. Here's the rhythm to keep.</p>
+    </div>
+
+    <h3>Three standing forums, forever</h3>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Forum</th><th>Cadence</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AI clinic</strong></td><td>Weekly · 30 min</td><td>One team member shares a prompt or workflow that saved them time this week. Others copy it.</td></tr>
+          <tr><td><strong>Failure post-mortem</strong></td><td>Monthly · 45 min</td><td>Cases where AI got it wrong. What happened, how caught, what to do next time.</td></tr>
+          <tr><td><strong>Tools refresh</strong></td><td>Quarterly · 90 min</td><td>What's new, what's worth adopting, what's the team already doing better than the tooling assumes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Your personal daily loop</h3>
+    <ul>
+      <li>At the start of every task, ask: "would AI help here?" Sometimes the answer is no. Getting good at the answer is the skill.</li>
+      <li>When AI produces something you'll ship, verify at least one specific claim in the output before merging.</li>
+      <li>When AI gets something wrong, write down what happened. Not to blame — to notice patterns.</li>
+    </ul>
+
+    <div class="callout good">
+      <div class="callout-tag">Graduation criteria</div>
+      <p>You have finished this workbook when you can (1) write a five-part prompt without thinking about it, (2) name the three verification patterns and use one on every non-trivial AI output, and (3) sanitize a real log line without checking the never-paste table.</p>
+    </div>
+  </div>
+
+  <!-- ================================================================ PRACTICE APPENDIX -->
+  <div class="module" id="m7">
+    <div class="mod-head">
+      <div class="mod-num">Appendix · Practice</div>
+      <h2 class="mod-title">Twenty real Tathkarah scenarios to practice on.</h2>
+      <p class="mod-goal">Work through these on your own or in the Week 2 live session. Model answers included — but try yourself first.</p>
+    </div>
+
+    <div class="practice-item">
+      <p class="practice-q">1. tk-flight-jazeera won't start in dev.</p>
+      <div class="practice-scenario">panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x1 addr=0x8 pc=0xa301af]
+goroutine 1 [running]:
+github.com/eko/gocache/v2/cache.(*LoadableCache).Set(0xc000434c00?, ...)
+tk-flight-jazeera/service/common.InitJ9(...) service/common/client.go:98</div>
+      <p><strong>Task:</strong> Write the ideal prompt to send Claude to diagnose this.</p>
+    </div>
+
+    <div class="practice-item">
+      <p class="practice-q">2. Hotel search is slow in dev — was ~400ms, now ~3 seconds.</p>
+      <p><strong>Task:</strong> Write the prompt to ask Claude for hypotheses.</p>
+    </div>
+
+    <div class="practice-item">
+      <p class="practice-q">3. Add a health-check endpoint to tk-payment-tap.</p>
+      <p><strong>Task:</strong> Write the prompt.</p>
+    </div>
+
+    <div class="practice-item">
+      <p class="practice-q">4. QA scenario — the flight passenger form crashes on Arabic names with hamza.</p>
+      <p><strong>Task:</strong> Write the prompt asking Claude to generate test scenarios.</p>
+    </div>
+
+    <div class="practice-item">
+      <p class="practice-q">5. Server admin scenario — the alpha-flight VPN host is slow. Where do you start?</p>
+      <p><strong>Task:</strong> Write the prompt.</p>
+    </div>
+
+    <p style="margin-top: 32px; color: var(--muted); font-style: italic; font-family: var(--serif);">15 more scenarios will be delivered as a follow-up workbook after this one is completed. Bring your notes on scenarios 1–5 to the Week 2 live session.</p>
+  </div>
+
+  <footer>
+    Read once, practice weekly, review at the failure post-mortems. Skills that don't get exercised don't stay.
+    <div class="signoff">Tathkarah · AI Foundations Workbook · Draft 01</div>
+  </footer>
+
+</div>

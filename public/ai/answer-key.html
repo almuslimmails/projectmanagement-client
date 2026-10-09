@@ -1,0 +1,350 @@
+<title>Tathkarah · AI Foundations — Answer Key</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --ground: #F7F5F0; --panel: #FFFDF7; --ink: #1B1E24; --ink-soft: #3C414C;
+    --muted: #74788A; --muted-2: #A8ABB8; --rule: #E4DFD1; --rule-strong: #C7C0AC;
+    --accent: #2E5D7B; --ochre: #B87D3A; --ochre-soft: #F2E8D4;
+    --good: #3E7A4D; --good-soft: #DEEBDE; --crit: #B04A3B; --crit-soft: #F2DBD5; --code-bg: #EEE9DA;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  }
+  :root[data-theme="light"] {
+    --ground: #F7F5F0; --panel: #FFFDF7; --ink: #1B1E24; --ink-soft: #3C414C;
+    --muted: #74788A; --muted-2: #A8ABB8; --rule: #E4DFD1; --rule-strong: #C7C0AC;
+    --accent: #2E5D7B; --ochre: #B87D3A; --ochre-soft: #F2E8D4;
+    --good: #3E7A4D; --good-soft: #DEEBDE; --crit: #B04A3B; --crit-soft: #F2DBD5; --code-bg: #EEE9DA;
+  }
+  html { background: var(--ground); }
+  body { font-family: var(--sans); color: var(--ink); line-height: 1.55; font-size: 15px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  .wrap { max-width: 800px; margin: 0 auto; padding: 48px 32px 96px; }
+
+  .cover { padding-bottom: 32px; border-bottom: 1.5px solid var(--rule-strong); margin-bottom: 36px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 12px; }
+  .eyebrow .sep { color: var(--muted-2); margin: 0 8px; }
+  .title { font-family: var(--serif); font-weight: 500; font-size: 40px; line-height: 1.1; color: var(--ink); margin: 0 0 12px; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink-soft); margin: 0; text-wrap: balance; }
+
+  .warning { background: var(--crit-soft); border-left: 3px solid var(--crit); padding: 16px 20px; margin: 28px 0 36px; }
+  .warning h2 { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--crit); margin: 0 0 8px; font-weight: 700; }
+  .warning p { margin: 0; font-size: 14px; color: var(--ink); }
+
+  section { margin-bottom: 44px; }
+  .sec-head { padding-bottom: 12px; border-bottom: 1.5px solid var(--rule-strong); margin-bottom: 22px; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .sec-label { font-family: var(--serif); font-style: italic; color: var(--ochre); font-size: 15px; letter-spacing: 0.02em; }
+  .sec-title { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--ink); margin: 4px 0 0; letter-spacing: -0.005em; text-wrap: balance; }
+  .sec-meta { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; white-space: nowrap; }
+
+  .q { padding: 18px 0; border-bottom: 1px dotted var(--rule); }
+  .q:last-child { border-bottom: none; }
+  .q-num { font-family: var(--serif); font-weight: 500; color: var(--ochre); margin-right: 8px; }
+  .q-text { color: var(--ink); font-size: 14px; margin: 0 0 8px; line-height: 1.55; }
+  .q-text code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+  .q-scenario { font-family: var(--mono); font-size: 12px; background: var(--code-bg); padding: 10px 14px; margin: 8px 0; white-space: pre-wrap; line-height: 1.5; color: var(--ink); }
+
+  .answer-tag { display: inline-block; padding: 2px 10px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin: 4px 0 6px; }
+  .answer-tag.y { background: var(--good); color: white; }
+  .answer-tag.n { background: var(--crit); color: white; }
+  .why { font-size: 13px; color: var(--ink); margin: 6px 0 0; line-height: 1.55; }
+  .why strong { color: var(--ink); font-weight: 600; }
+
+  .rubric { background: var(--good-soft); border-left: 2px solid var(--good); padding: 12px 16px; margin-top: 10px; font-size: 13px; }
+  .rubric-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--good); font-weight: 700; margin-bottom: 6px; }
+  .rubric ul { list-style: none; padding: 0; margin: 0; }
+  .rubric li { padding: 3px 0; color: var(--ink); }
+  .rubric li::before { content: "› "; color: var(--good); margin-right: 4px; font-weight: 700; }
+
+  .model-answer { background: var(--panel); border: 1px solid var(--rule); padding: 12px 16px; margin-top: 10px; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink); white-space: pre-wrap; }
+  .model-label { font-family: var(--sans); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+
+  /* Grade brackets */
+  .grade-box { background: var(--panel); border: 2px solid var(--ink); padding: 24px 28px; margin: 36px 0; }
+  .grade-box h3 { font-family: var(--serif); font-weight: 500; font-size: 20px; color: var(--ink); margin: 0 0 16px; }
+  .grade-bracket { display: grid; grid-template-columns: 140px 1fr; gap: 20px; padding: 10px 0; border-top: 1px solid var(--rule); font-size: 14px; align-items: baseline; }
+  .grade-bracket:first-of-type { border-top: none; }
+  .grade-range { font-family: var(--serif); font-weight: 500; color: var(--ink); }
+  .grade-desc { color: var(--ink-soft); line-height: 1.55; }
+  .grade-desc strong { color: var(--ink); }
+
+  .diagnostic { margin-top: 28px; }
+  .diagnostic h3 { font-family: var(--serif); font-weight: 500; font-size: 18px; margin: 0 0 12px; color: var(--ink); }
+  .diagnostic table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .diagnostic th { text-align: left; font-weight: 700; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 12px 8px; border-bottom: 1.5px solid var(--rule-strong); }
+  .diagnostic td { padding: 10px 12px; border-bottom: 1px solid var(--rule); color: var(--ink-soft); vertical-align: top; }
+  .diagnostic td:first-child, .diagnostic th:first-child { padding-left: 0; }
+  .diagnostic td strong { color: var(--ink); }
+
+  footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--rule-strong); font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 13px; text-align: center; }
+  footer .signoff { font-family: var(--sans); font-style: normal; text-transform: uppercase; letter-spacing: 0.14em; font-size: 11px; color: var(--muted-2); margin-top: 6px; }
+
+  @media print { section { page-break-inside: avoid; } .q { page-break-inside: avoid; } body { font-size: 12pt; } }
+</style>
+
+<div class="wrap">
+
+  <header class="cover">
+    <p class="eyebrow">Answer key · AI Foundations Assessment · Trainer only</p>
+    <h1 class="title">Answer key + scoring rubric.</h1>
+    <p class="subtitle">The companion to the assessment. Do not distribute to trainees. Use during scoring and to guide the debrief conversation.</p>
+  </header>
+
+  <div class="warning">
+    <h2>Trainer only</h2>
+    <p>Keep this document separate from the assessment. If a trainee sees the answers before their test, the score means nothing — the point isn't the number, it's finding real gaps to fix.</p>
+  </div>
+
+  <!-- =============================================== SECTION A -->
+  <section>
+    <div class="sec-head">
+      <div><div class="sec-label">Section A</div><h2 class="sec-title">Appropriate use — Y or N.</h2></div>
+      <div class="sec-meta">5 pts · 1 pt each</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">A1.</span> Paste our production Redis password into ChatGPT to ask why the connection is slow.</p>
+      <span class="answer-tag n">N — Not appropriate</span>
+      <p class="why">Never paste production credentials, ever. Even "just to ask why they're slow". Sanitize first. If a trainee marks this Y, they need to redo Module 4 before touching real Tathkarah work.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">A2.</span> Ask Claude to summarize a 200-line stack trace from tk-flight-jazeera.</p>
+      <span class="answer-tag y">Y — Appropriate</span>
+      <p class="why">Stack traces are typically safe (they contain file paths, line numbers, function names — no user data unless the panic captured a live request body). Claude reads them faster than a human.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">A3.</span> Have Claude generate a first draft of test cases for the new coupon endpoint.</p>
+      <span class="answer-tag y">Y — Appropriate</span>
+      <p class="why">Excellent use. Test case generation is one of the highest-leverage uses of AI. Human reviews the generated tests before merging.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">A4.</span> Ask Claude the current exchange rate for KWD → USD to display in the app.</p>
+      <span class="answer-tag n">N — Not appropriate</span>
+      <p class="why">Live data question. Claude has a training cutoff and cannot know today's FX rate. Use an FX API. If Claude gave a specific rate, it would be a hallucination.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">A5.</span> Ask Claude to compute the total commission across yesterday's 4,713 bookings from our database.</p>
+      <span class="answer-tag n">N — Not appropriate</span>
+      <p class="why">Two problems: (1) Claude can't do reliable arithmetic on 4,713 rows, (2) even if it could, we'd be sending real transaction data to a third party. Use a SQL query.</p>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION B -->
+  <section>
+    <div class="sec-head">
+      <div><div class="sec-label">Section B</div><h2 class="sec-title">Security judgment — safe or not.</h2></div>
+      <div class="sec-meta">10 pts · 2 pts each</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">B1.</span> Go source of <code>handlers/booking.go</code> with all imports and function bodies visible.</p>
+      <span class="answer-tag y">SAFE — with a check</span>
+      <p class="why">Usually safe — <strong>but only if</strong> the trainee first scans the file for hardcoded secrets, internal URLs, or embedded API keys. Award full 2 pts if the answer mentions this precondition. Award 1 pt for unqualified "safe".</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">B2.</span> <code>postgres://tkdev:Pr0d_Passw0rd@10.0.4.12:5432/tathkarah</code></p>
+      <span class="answer-tag n">NOT SAFE</span>
+      <p class="why">Two secrets in one line: production password + internal IP. Both must be sanitized. If a trainee misses this, they must redo Module 4 immediately.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">B3.</span> Screenshot of a customer's booking confirmation with name, phone, PNR, amount.</p>
+      <span class="answer-tag n">NOT SAFE</span>
+      <p class="why">Full PII combination + booking data. Never. If the trainee needs to discuss the layout, describe it in words or use a fake mockup.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">B4.</span> Stack trace with only file paths, function names, line numbers.</p>
+      <span class="answer-tag y">SAFE</span>
+      <p class="why">Pure code metadata. No user data. Standard safe paste.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">B5.</span> CSV of failed transactions — masked cards but real customer emails.</p>
+      <span class="answer-tag n">NOT SAFE</span>
+      <p class="why">Emails are PII, especially combined with transaction data (re-identification). Replace emails with <code>test1@example.com</code> etc. before pasting. Common mistake — masked cards feel "safe enough", but the combination isn't.</p>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION C -->
+  <section>
+    <div class="sec-head">
+      <div><div class="sec-label">Section C</div><h2 class="sec-title">Spot the hallucination.</h2></div>
+      <div class="sec-meta">5 pts · 1 pt each</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">C1.</span> "<code>KEYDB.PRUNE 30d</code> command."</p>
+      <span class="answer-tag n">FABRICATED</span>
+      <p class="why">There is no such command. KeyDB is a Redis fork and neither has a built-in "prune by age" command. Pure fabrication — key detection point is the specific, plausible-sounding syntax.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">C2.</span> "Go 1.22 introduced range-over-int."</p>
+      <span class="answer-tag y">TRUE</span>
+      <p class="why">Correct. Range-over-int shipped in Go 1.22. <code>for i := range 10</code> is valid Go 1.22+ syntax.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">C3.</span> "In micro/go-micro/v2, <code>config.Get(a, b, c)</code> navigates nested keys."</p>
+      <span class="answer-tag y">TRUE</span>
+      <p class="why">Correct. <code>config.Get</code> is variadic on strings. Verified live in this project on 2026-06-14 by reading the source.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">C4.</span> "Flutter <code>Column</code> has an <code>alignment</code> parameter."</p>
+      <span class="answer-tag n">FABRICATED</span>
+      <p class="why">Half-truth. Column has <code>mainAxisAlignment</code> and <code>crossAxisAlignment</code>, not a single <code>alignment</code>. This is the classic "sounds right, isn't quite" hallucination.</p>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">C5.</span> "MongoDB 6 removed <code>db.eval()</code>."</p>
+      <span class="answer-tag y">TRUE</span>
+      <p class="why">Correct. <code>db.eval()</code> was deprecated in MongoDB 3.0 and removed in later versions. Still — a good candidate to verify, since a hallucinated version number would be plausible here.</p>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION D -->
+  <section>
+    <div class="sec-head">
+      <div><div class="sec-label">Section D</div><h2 class="sec-title">Prompt writing — 3 pts each.</h2></div>
+      <div class="sec-meta">24 pts total</div>
+    </div>
+
+    <div class="rubric">
+      <div class="rubric-label">Universal rubric for D1–D8</div>
+      <ul>
+        <li><strong>1 pt Context:</strong> names the repo, language, branch, or a real anchor file</li>
+        <li><strong>1 pt Specificity:</strong> the ask is one concrete thing, not a vague request</li>
+        <li><strong>1 pt Constraints or format:</strong> tells Claude either what to avoid, or what shape the answer should take</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D1.</span> Rewrite: "add caching to the search endpoint"</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>In tk-hotel-main's handlers/search.go, cache the response of POST /hotels/search in KeyDB (already wired at localhost:6379). Cache key = SHA1 of the request body. TTL 60 seconds. On cache miss, call the underlying handler and store the result. Log hit/miss ratio at info level. Show me the diff only.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D2.</span> Rewrite (tk-flutter-mobile-app home hotel tile): "make the tile bigger"</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>In lib/Presentation/home_view/home_screen.dart, the hotel tile currently renders at 140x140. Increase to 180x180 while keeping the current border radius (12) and shadow. The grid must still show 2 tiles per row on iPhone SE width (375px). RTL layout must still align correctly.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D3.</span> Rewrite: "debug why it's slow"</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>The /hotels/search endpoint on tk-hotel-main is taking ~3 seconds in dev. Baseline (2 weeks ago) was ~400ms. What are the most likely causes to check, ordered by probability, given this stack: Go micro/go-micro/v2, KeyDB cache, Typesense search, MongoDB store. Suggest one debug command per hypothesis.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D4.</span> Prompt for diagnosing the tk-flight-jazeera panic.</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>I'm getting this panic starting tk-flight-jazeera in our dev environment. The service is on feature/v4.5, Go 1.22. It uses github.com/Tathkarah-for-travela-and-tourism/tk-cache-client for cache init via cache.InitCache(c, provider, addr, pass, 0).
+
+Full trace: [paste].
+
+What's the most likely cause? Show your reasoning. Then propose the specific one-line change that would surface a clearer error message next time this fails.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D5.</span> Hotel search slowdown prompt.</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>The POST /hotels/search endpoint on tk-hotel-main is taking ~3 seconds in dev. Baseline (2 weeks ago) was ~400ms. Nothing obvious changed in that repo.
+
+Stack: Go micro/go-micro/v2 · KeyDB cache at localhost:6379 · Typesense at localhost:8108 · MongoDB at localhost:27017.
+
+Rank the most likely causes by probability. For each, give me one debug command I can run right now to test the hypothesis. Format: one line per hypothesis, one line per command.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D6.</span> Health endpoint for tk-payment-tap.</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>In tk-payment-tap, add a GET /health endpoint that returns 200 with a JSON body {status:"ok", lastGatewayCallAt:"…"}. If we've never called the upstream Tap gateway, return lastGatewayCallAt:null.
+
+Match the existing handler pattern (see any handler in service/). Register it in the router the same way. Don't touch go.mod. Show me the diff only.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D7.</span> QA prompt for Arabic hamza test cases.</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>For the flight passenger form on tk-flutter-mobile-app, generate 15 test scenarios focused on Arabic name input. Include:
+
+- Names with hamza in different positions (initial ء, medial أ إ ؤ ئ, final)
+- Names with taa marbuta (ة)
+- Mixed Arabic + Latin (a common real case)
+- Very long names (60+ characters)
+- Names with diacritics (تشكيل)
+- RTL/LTR rendering edge cases
+
+For each scenario: input, expected UI behavior, expected data sent to backend. Format as a numbered list.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-text"><span class="q-num">D8.</span> Server admin prompt for slow alpha-flight VPN host.</p>
+      <div class="model-answer"><div class="model-label">Model answer</div>I have SSH access to alpha-flight (VPN host, Ubuntu, runs several tk-* services under systemd). Users report the machine is slow. Give me a ranked list of the six most useful commands to run to diagnose, in order — cheapest / most-likely-informative first. For each command, one sentence on what to look for in the output.</div>
+    </div>
+  </section>
+
+  <!-- =============================================== SECTION E -->
+  <section>
+    <div class="sec-head">
+      <div><div class="sec-label">Section E</div><h2 class="sec-title">Applied task — 6 pts.</h2></div>
+      <div class="sec-meta">Take-home · debrief in person</div>
+    </div>
+
+    <div class="rubric">
+      <div class="rubric-label">Rubric</div>
+      <ul>
+        <li><strong>2 pts — Completed the task.</strong> They did redo a real piece of work with Claude Code. Not a made-up hypothetical.</li>
+        <li><strong>2 pts — Named a real mistake.</strong> They identified something Claude got wrong, missed, or hallucinated. "It worked perfectly" is 0 points — either they didn't verify, or they picked too easy a task.</li>
+        <li><strong>2 pts — Honest reflection.</strong> The "would use again?" answer shows judgment — they know for what tasks it fits and where it doesn't. A blanket "yes always" or "no never" is 1 point maximum.</li>
+      </ul>
+    </div>
+
+    <p style="font-size: 13px; color: var(--muted); font-style: italic; margin-top: 16px;">This is a debrief conversation, not a marked answer. Sit with the trainee for 10 minutes and go through their writeup. This is where you catch overconfidence, blind spots, and false modesty.</p>
+  </section>
+
+  <!-- =============================================== GRADE BOX -->
+  <div class="grade-box">
+    <h3>Score interpretation</h3>
+    <div class="grade-bracket">
+      <div class="grade-range">45–50</div>
+      <div class="grade-desc"><strong>Fluent.</strong> Ready to use AI on real Tathkarah work with light supervision. Include them in the AI clinic as a contributor, not just a listener.</div>
+    </div>
+    <div class="grade-bracket">
+      <div class="grade-range">40–44</div>
+      <div class="grade-desc"><strong>Passing.</strong> Cleared the bar. Pair them with a stronger user for the first two weeks of real use to catch small mistakes before they become expensive.</div>
+    </div>
+    <div class="grade-bracket">
+      <div class="grade-range">30–39</div>
+      <div class="grade-desc"><strong>Needs review.</strong> Identify which section(s) they lost points in, have them redo those modules, retake the failed sections in one week. Do not use AI on production-adjacent work yet.</div>
+    </div>
+    <div class="grade-bracket">
+      <div class="grade-range">Below 30</div>
+      <div class="grade-desc"><strong>Restart the workbook.</strong> No shame — training didn't land. Try a different format (paired live sessions, walkthrough with mentor) before the second attempt.</div>
+    </div>
+    <div class="grade-bracket">
+      <div class="grade-range" style="color: var(--crit);">Any B section score below 6/10</div>
+      <div class="grade-desc" style="color: var(--crit);"><strong>Overrides everything above.</strong> Regardless of total score, if security judgment is weak, they cannot use AI on Tathkarah work until they retake Section B and pass it. This is the one non-negotiable.</div>
+    </div>
+  </div>
+
+  <div class="diagnostic">
+    <h3>Where they lost points → which module to revisit</h3>
+    <table>
+      <thead><tr><th>Weak section</th><th>Revisit module</th><th>What to work on</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Section A</strong></td><td>Module 1</td><td>Mental model of what AI is / isn't. Live examples of good vs bad use.</td></tr>
+        <tr><td><strong>Section B</strong></td><td>Module 4</td><td>Security discipline. Practice sanitization on real (redacted) logs.</td></tr>
+        <tr><td><strong>Section C</strong></td><td>Module 5</td><td>Verification patterns. Practice with 10 more spot-the-fabrication rounds.</td></tr>
+        <tr><td><strong>Section D</strong></td><td>Module 2</td><td>Prompt structure. Have them rewrite 20 more real Tathkarah prompts with a coach.</td></tr>
+        <tr><td><strong>Section E</strong></td><td>Module 3</td><td>Claude Code usage — likely they haven't spent enough hands-on time yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Grade the whole system, not just the trainee. If most people miss the same question, the workbook is wrong — not them.
+    <div class="signoff">Tathkarah · Answer key · Draft 01 · Trainer only</div>
+  </footer>
+
+</div>
