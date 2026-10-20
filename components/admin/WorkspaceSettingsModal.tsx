@@ -29,7 +29,7 @@ const MENU_OPTIONS: { id: string; label: string }[] = [
 ]
 
 export default function WorkspaceSettingsModal({ members, currentMember, onClose, onMembersChanged, onPermissionsChanged }: Props) {
-  const [tab, setTab] = useState<'members' | 'roles'>('members')
+  const [tab, setTab] = useState<'members' | 'roles' | 'data'>('members')
   const [busy, setBusy] = useState(false)
   const isOwner = currentMember?.role === 'owner'
 
@@ -51,10 +51,10 @@ export default function WorkspaceSettingsModal({ members, currentMember, onClose
         </div>
 
         <div className="flex gap-2 px-6 pt-3 border-b shrink-0">
-          {(['members','roles'] as const).map(t => (
+          {(isOwner ? ['members','roles','data'] as const : ['members','roles'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`text-sm px-3 py-2 border-b-2 -mb-px transition-colors capitalize ${tab === t ? 'border-indigo-600 text-indigo-700 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-              {t === 'members' ? `Members (${members.length})` : 'Role permissions'}
+              {t === 'members' ? `Members (${members.length})` : t === 'roles' ? 'Role permissions' : 'Demo data'}
             </button>
           ))}
         </div>
@@ -62,7 +62,9 @@ export default function WorkspaceSettingsModal({ members, currentMember, onClose
         <div className="flex-1 overflow-y-auto p-6">
           {tab === 'members'
             ? <MembersTab members={members} isOwner={isOwner} busy={busy} run={run} onChanged={onMembersChanged} />
-            : <RolePermissionsTab isOwner={isOwner} busy={busy} run={run} onChanged={onPermissionsChanged} />}
+            : tab === 'roles'
+            ? <RolePermissionsTab isOwner={isOwner} busy={busy} run={run} onChanged={onPermissionsChanged} />
+            : <DemoDataTab busy={busy} run={run} />}
         </div>
 
         <div className="flex items-center justify-end gap-3 px-6 py-3 border-t bg-gray-50 shrink-0">
@@ -170,6 +172,59 @@ function MemberRow({ member, isOwner, busy, run, onChanged }: {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       )}
+    </div>
+  )
+}
+
+// ─── Demo data tab (owner-only) ──────────────────────────────────────────────
+
+function DemoDataTab({ busy, run }: { busy: boolean; run: (fn: () => Promise<unknown>) => Promise<void> }) {
+  const [arming, setArming] = useState(false)
+  const [done, setDone] = useState<string | null>(null)
+
+  function reset() {
+    run(async () => {
+      const r: any = await api.resetDemoData()
+      setArming(false)
+      setDone(`Rebuilt ${r.projects} projects with ${r.issues} issues. Reloading…`)
+      // Everything project-scoped changed — a full reload is the honest refresh.
+      setTimeout(() => window.location.reload(), 1200)
+    })
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-4">
+        <p className="text-sm font-semibold text-gray-900">Reset demo data</p>
+        <p className="text-xs text-gray-600 mt-1">
+          Deletes <b>every project</b> — including all issues, comments, attachments, milestones,
+          epics and wiki pages — and rebuilds the standard three-project demo set
+          (Web Dashboard, Mobile App, API Platform) with fresh dates.
+        </p>
+        <p className="text-xs text-gray-600 mt-1">
+          Members, passwords, exams, announcements, chat and attendance are <b>not</b> touched;
+          missing demo members are re-created.
+        </p>
+
+        {done ? (
+          <p className="text-xs font-medium text-emerald-700 mt-3">{done}</p>
+        ) : arming ? (
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-xs font-medium text-red-700">This cannot be undone. Replace all projects with demo data?</span>
+            <button onClick={reset} disabled={busy}
+              className="text-xs text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 px-3 py-1.5 rounded-lg">
+              {busy ? 'Resetting…' : 'Yes, reset everything'}
+            </button>
+            <button onClick={() => setArming(false)} disabled={busy}
+              className="text-xs text-gray-600 hover:bg-gray-200 px-3 py-1.5 rounded-lg">Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setArming(true)} disabled={busy}
+            className="mt-3 text-xs font-medium text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 px-3 py-1.5 rounded-lg">
+            Reset demo data…
+          </button>
+        )}
+      </div>
     </div>
   )
 }
