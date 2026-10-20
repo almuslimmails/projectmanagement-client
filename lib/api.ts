@@ -146,6 +146,7 @@ export const api = {
   deleteProject: (pid: string) => del(`/projects/${pid}`),
   getDashboard: (pid: string) => get(`/projects/${pid}/dashboard`),
   getWorkspaceOverview: () => get('/dashboard/overview'),
+  getAgentFeed: () => get('/dashboard/agent-feed'),
 
   // issues
   getIssues: (pid: string, filters?: Record<string, string>) =>

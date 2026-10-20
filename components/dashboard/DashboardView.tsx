@@ -20,6 +20,15 @@ interface Overview {
   projects: ProjectRow[]
   totals: { projects: number; total: number; inProgress: number; completed: number; overdue: number; createdLast7: number; completedLast7: number }
 }
+interface AgentFeedItem {
+  id: string; project_id: string
+  sequence_id: number; type_seq: number | null; type: string
+  title: string; priority: string; due_date: string | null; created_at: string
+  project_name: string; project_identifier: string; project_emoji: string
+  state_name: string | null; state_color: string | null; state_group: string | null
+  agent_name: string
+  assignees: { id: string; name: string }[]
+}
 interface ProjectDashboard {
   headline: { total: number; inProgress: number; completed: number; overdue: number; createdLast7: number; completedLast7: number }
   rollup: { backlog: number; unstarted: number; started: number; completed: number; cancelled: number }
@@ -67,11 +76,17 @@ export default function DashboardView({ projects, initialProjectId, onClickIssue
   const [details, setDetails] = useState<Record<string, ProjectDashboard | 'loading' | 'error'>>({})
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(initialProjectId ? [initialProjectId] : []))
 
+  const [agentFeed, setAgentFeed] = useState<AgentFeedItem[]>([])
+
   useEffect(() => {
     let cancelled = false
     api.getWorkspaceOverview()
       .then((d: Overview) => { if (!cancelled) setOverview(d) })
       .catch(e => { if (!cancelled) setErr(e?.message ?? 'Failed to load') })
+    // The agent feed is an extra — a failure here never blocks the dashboard.
+    api.getAgentFeed()
+      .then((d: AgentFeedItem[]) => { if (!cancelled && Array.isArray(d)) setAgentFeed(d) })
+      .catch(() => {})
     return () => { cancelled = true }
   }, [])
 
@@ -123,6 +138,43 @@ export default function DashboardView({ projects, initialProjectId, onClickIssue
           <StatCard label="Created · 7d"   value={overview.totals.createdLast7} accent="violet"
             subValue={`${overview.totals.completedLast7} done`} />
         </div>
+
+        {/* Tasks pushed from Claude */}
+        {agentFeed.length > 0 && (
+          <div className="bg-white ring-1 ring-violet-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-violet-100 bg-violet-50/60">
+              <span className="w-5 h-5 rounded-md bg-violet-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">✳</span>
+              <p className="text-[11px] font-bold text-violet-700 uppercase tracking-widest">Pushed from Claude</p>
+              <p className="text-[10px] text-violet-400 ml-auto">{agentFeed.length} recent · newest first</p>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              {agentFeed.map(t => (
+                <li key={t.id}
+                  onClick={() => onClickIssue?.(t.project_id, t.id)}
+                  className="px-5 py-2.5 flex items-center gap-3 cursor-pointer hover:bg-violet-50/40 transition-colors">
+                  <span className="text-sm leading-none shrink-0" title={t.project_name}>{t.project_emoji || '📁'}</span>
+                  <span className="text-[11px] text-gray-400 font-mono shrink-0">
+                    {t.project_identifier}-{formatIssueCode(t as any)}
+                  </span>
+                  <span className="text-sm text-gray-800 truncate flex-1 min-w-0">{t.title}</span>
+                  {t.state_name && (
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-medium text-gray-600 px-2 py-0.5 rounded-full bg-gray-50 ring-1 ring-gray-200 shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: t.state_color ?? '#9CA3AF' }} />
+                      {t.state_name}
+                    </span>
+                  )}
+                  <span className="hidden sm:inline text-[11px] shrink-0" title={PRIORITY_CONFIG[t.priority as keyof typeof PRIORITY_CONFIG]?.label ?? t.priority}>
+                    {PRIORITY_CONFIG[t.priority as keyof typeof PRIORITY_CONFIG]?.icon ?? ''}
+                  </span>
+                  <span className="flex -space-x-1.5 shrink-0">
+                    {t.assignees.slice(0, 3).map(a => <Avatar key={a.id} name={a.name} size={5} />)}
+                  </span>
+                  <span className="text-[10px] text-gray-400 shrink-0 w-14 text-right">{relTime(t.created_at)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Comparison table */}
         <div className="bg-white ring-1 ring-gray-100 rounded-2xl shadow-sm overflow-hidden">
