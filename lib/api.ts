@@ -110,6 +110,25 @@ export const api = {
     setCurrentMemberId(member.id)
     return member
   },
+  // ── first-run setup wizard ────────────────────────────────────────
+  getSetupStatus: async () => {
+    const res = await fetch(`${TRACKER_API_BASE}/setup/status`)
+    if (!res.ok) throw new Error('setup status unavailable')
+    return res.json()
+  },
+  runSetup: async (data: { workspace_name?: string; name: string; email: string; password: string; load_demo?: boolean }) => {
+    const res = await fetch(`${TRACKER_API_BASE}/setup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? 'Setup failed')
+    const { token, member } = await res.json()
+    setToken(token)
+    setCurrentMemberId(member.id)
+    return member
+  },
+
   authMe: async () => {
     const res = await fetch(`${TRACKER_API_BASE}/auth/me`, { headers: authHeaders() })
     if (!res.ok) throw new Error('not signed in')
