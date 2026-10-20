@@ -3,8 +3,9 @@
 // JWT sign-in against tracker-api (POST /auth/login). On success the token
 // lands in localStorage (+ a presence cookie for middleware gating) and the
 // member id becomes the acting identity. NextAuth is no longer involved.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
+import SetupWizard from './SetupWizard'
 
 interface Props { next?: string }
 
@@ -13,6 +14,14 @@ export default function SignInForm({ next = '/' }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  // null = still checking; a fresh install shows the setup wizard instead.
+  const [setup, setSetup] = useState<{ needsSetup: boolean; workspace_name: string | null } | null>(null)
+
+  useEffect(() => {
+    api.getSetupStatus()
+      .then(setSetup)
+      .catch(() => setSetup({ needsSetup: false, workspace_name: null }))
+  }, [])
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,6 +35,13 @@ export default function SignInForm({ next = '/' }: Props) {
       setError('Invalid email or password')
       setPending(false)
     }
+  }
+
+  if (setup === null) {
+    return <p className="text-sm text-gray-400 text-center py-6">Checking server…</p>
+  }
+  if (setup.needsSetup) {
+    return <SetupWizard initialWorkspaceName={setup.workspace_name} />
   }
 
   return (

@@ -86,12 +86,13 @@ function MembersTab({ members, isOwner, busy, run, onChanged }: {
   const [newName, setNewName] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [newRole, setNewRole] = useState<Role>('member')
+  const [newPassword, setNewPassword] = useState('')
 
   function add() {
     if (!newName.trim()) return
     run(async () => {
-      await api.createMember({ name: newName.trim(), email: newEmail.trim(), role: newRole })
-      setNewName(''); setNewEmail(''); setNewRole('member'); setAdding(false)
+      await api.createMember({ name: newName.trim(), email: newEmail.trim(), role: newRole, password: newPassword || undefined })
+      setNewName(''); setNewEmail(''); setNewRole('member'); setNewPassword(''); setAdding(false)
       await onChanged()
     })
   }
@@ -116,6 +117,9 @@ function MembersTab({ members, isOwner, busy, run, onChanged }: {
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
+            <input value={newPassword} onChange={e => setNewPassword(e.target.value)} type="password"
+              placeholder="Login password (optional — without one the member cannot sign in)"
+              className="w-full text-sm border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
             <div className="flex justify-end gap-2">
               <button onClick={() => { setAdding(false); setNewName(''); setNewEmail('') }}
                 className="text-xs text-gray-600 hover:bg-gray-200 px-3 py-1 rounded">Cancel</button>
@@ -152,6 +156,11 @@ function MemberRow({ member, isOwner, busy, run, onChanged }: {
     if (!confirm(`Remove ${member.name} from the workspace?`)) return
     run(async () => { await api.deleteMember(member.id); await onChanged() })
   }
+  function setPassword() {
+    const pw = prompt(`New login password for ${member.name}:`)
+    if (!pw) return
+    run(async () => { await api.updateMember(member.id, { password: pw } as any) })
+  }
 
   return (
     <div className="flex items-center gap-3 py-2 border-b border-gray-100">
@@ -165,6 +174,13 @@ function MemberRow({ member, isOwner, busy, run, onChanged }: {
         className={`text-xs border rounded px-2 py-1 ${isOwner ? 'bg-white' : 'bg-gray-50 cursor-not-allowed'}`}>
         {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
       </select>
+      {isOwner && (
+        <button onClick={setPassword} disabled={busy}
+          title="Set login password"
+          className="text-gray-400 hover:text-indigo-600 p-1.5">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        </button>
+      )}
       {isOwner && (
         <button onClick={remove} disabled={busy}
           title="Remove member"
