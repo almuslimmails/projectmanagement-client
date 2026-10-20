@@ -129,6 +129,7 @@ export const api = {
   deleteMember: (mid: string) => del(`/workspace/members/${mid}`),
   getRolePermissions: () => get('/admin/role-permissions'),
   setRoleMenus: (role: string, menuIds: string[]) => r('PUT', '/admin/role-permissions', { role, menu_ids: menuIds }),
+  resetDemoData: () => post('/admin/demo-reset', {}),
 
   // attendance / clock-in
   getMySession: () => get('/attendance/me'),
