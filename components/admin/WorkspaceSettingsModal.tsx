@@ -197,6 +197,25 @@ function MemberRow({ member, isOwner, busy, run, onChanged }: {
 function DemoDataTab({ busy, run }: { busy: boolean; run: (fn: () => Promise<unknown>) => Promise<void> }) {
   const [arming, setArming] = useState(false)
   const [done, setDone] = useState<string | null>(null)
+  // null = checking; the server says whether demo tools are enabled (ENABLE_DEMO_TOOLS=1).
+  const [enabled, setEnabled] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    api.getSetupStatus()
+      .then((s: any) => setEnabled(!!s.demo_tools))
+      .catch(() => setEnabled(false))
+  }, [])
+
+  if (enabled === null) return <p className="text-sm text-gray-500">Checking server…</p>
+  if (!enabled) return (
+    <div className="border border-gray-200 bg-gray-50 rounded-xl p-4">
+      <p className="text-sm font-semibold text-gray-900">Demo tools are disabled on this server</p>
+      <p className="text-xs text-gray-600 mt-1">
+        This server runs without <span className="font-mono">ENABLE_DEMO_TOOLS=1</span>, so the demo-data
+        reset is switched off — the right setting for a production instance with real projects.
+      </p>
+    </div>
+  )
 
   function reset() {
     run(async () => {
