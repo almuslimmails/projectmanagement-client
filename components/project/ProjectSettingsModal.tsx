@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DndContext, PointerSensor, useSensor, useSensors, closestCenter,
   type DragEndEvent,
@@ -8,15 +8,18 @@ import {
   SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import type { State, Label, Project, StateGroup } from '@/lib/types'
+import type { State, Label, Project, StateGroup, Member } from '@/lib/types'
 import { STATE_GROUP_CONFIG, validateLabelName, validateName, LABEL_NAME_MAX_LEN, NAME_MAX_LEN } from '@/lib/utils'
 import { api } from '@/lib/api'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface Props {
   projectId: string
   project: Project
   states: State[]
   labels: Label[]
+  allMembers: Member[]
+  currentMember: Member | null
   onClose: () => void
   onChange: () => void | Promise<void>
   onDelete: () => void | Promise<void>
@@ -24,9 +27,9 @@ interface Props {
 
 const PALETTE = ['#6366F1','#8B5CF6','#EC4899','#EF4444','#F97316','#EAB308','#10B981','#14B8A6','#0EA5E9','#9CA3AF']
 
-type Tab = 'general' | 'states' | 'labels'
+type Tab = 'general' | 'states' | 'labels' | 'access'
 
-export default function ProjectSettingsModal({ projectId, project, states, labels, onClose, onChange, onDelete }: Props) {
+export default function ProjectSettingsModal({ projectId, project, states, labels, allMembers, currentMember, onClose, onChange, onDelete }: Props) {
   const [tab, setTab] = useState<Tab>('general')
   const [busy, setBusy] = useState(false)
 
@@ -49,7 +52,7 @@ export default function ProjectSettingsModal({ projectId, project, states, label
 
         {/* Tabs */}
         <div className="flex gap-2 px-6 pt-3 border-b shrink-0">
-          {(['general','states','labels'] as const).map(t => (
+          {(['general','states','labels','access'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`text-sm px-3 py-2 border-b-2 -mb-px transition-colors capitalize ${tab === t ? 'border-indigo-600 text-indigo-700 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
               {t}
@@ -62,12 +65,85 @@ export default function ProjectSettingsModal({ projectId, project, states, label
           {tab === 'general' && <GeneralPanel project={project} busy={busy} run={run} onDelete={onDelete} />}
           {tab === 'states'  && <StatesPanel projectId={projectId} states={states} busy={busy} run={run} />}
           {tab === 'labels'  && <LabelsPanel projectId={projectId} labels={labels} busy={busy} run={run} />}
+          {tab === 'access'  && <AccessPanel projectId={projectId} allMembers={allMembers}
+            isOwner={currentMember?.role === 'owner'} busy={busy} run={run} />}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-3 border-t bg-gray-50 shrink-0">
           <button onClick={onClose} className="text-sm text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors">Close</button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Access (board visibility) ───────────────────────────────────────────
+
+function AccessPanel({ projectId, allMembers, isOwner, busy, run }: {
+  projectId: string; allMembers: Member[]; isOwner: boolean; busy: boolean
+  run: (fn: () => Promise<unknown>) => Promise<void>
+}) {
+  // null = loading. Empty set = open board.
+  const [attached, setAttached] = useState<Set<string> | null>(null)
+
+  useEffect(() => {
+    api.getProjectAccess(projectId)
+      .then((a: any) => setAttached(new Set<string>(a.member_ids ?? [])))
+      .catch(() => setAttached(new Set()))
+  }, [projectId])
+
+  if (attached === null) return <p className="text-sm text-gray-500">Loading…</p>
+
+  const restricted = attached.size > 0
+
+  function toggle(mid: string) {
+    if (!isOwner) return
+    const next = new Set(attached)
+    if (next.has(mid)) next.delete(mid)
+    else next.add(mid)
+    setAttached(next)  // optimistic
+    run(async () => {
+      const saved: any = await api.setProjectAccess(projectId, Array.from(next))
+      setAttached(new Set<string>(saved.member_ids ?? []))
+    })
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className={`rounded-xl border p-3 text-xs ${restricted ? 'border-indigo-200 bg-indigo-50/50 text-indigo-900' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
+        {restricted ? (
+          <><b>Restricted board</b> — only the {attached.size} attached member{attached.size === 1 ? '' : 's'} below
+          (plus owners and admins) can see this board, and cards can only be assigned to them.</>
+        ) : (
+          <><b>Open board</b> — everyone in the workspace can see it. Attach one or more members below to
+          restrict it to just them (owners and admins always keep access).</>
+        )}
+        {!isOwner && <span className="block mt-1 text-gray-500">Only owners can change the access list.</span>}
+      </div>
+
+      <div className="divide-y divide-gray-100">
+        {allMembers.map(m => {
+          const always = m.role === 'owner' || m.role === 'admin'
+          const checked = attached.has(m.id)
+          return (
+            <label key={m.id}
+              className={`flex items-center gap-3 py-2 ${isOwner && !always ? 'cursor-pointer' : 'cursor-default'}`}>
+              <input type="checkbox"
+                checked={checked || (always && restricted)}
+                disabled={!isOwner || always || busy}
+                onChange={() => toggle(m.id)}
+                className="rounded disabled:cursor-not-allowed" />
+              <Avatar name={m.name} size={7} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{m.name}</p>
+                <p className="text-[11px] text-gray-500 truncate">{m.email || '—'}</p>
+              </div>
+              <span className="text-[10px] uppercase tracking-wider text-gray-400">{m.role}</span>
+              {always && <span className="text-[10px] text-indigo-400 whitespace-nowrap">always sees all boards</span>}
+            </label>
+          )
+        })}
       </div>
     </div>
   )

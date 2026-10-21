@@ -143,6 +143,10 @@ export const api = {
 
   // members
   getMembers: () => get('/workspace/members'),
+  // Assignable members for a board (attached members when restricted, everyone when open).
+  getProjectAssignees: (pid: string) => get(`/projects/${pid}/members`),
+  getProjectAccess: (pid: string) => get(`/projects/${pid}/access`),
+  setProjectAccess: (pid: string, memberIds: string[]) => r('PUT', `/projects/${pid}/access`, { member_ids: memberIds }),
   createMember: (data: Dict) => post('/workspace/members', data),
   updateMember: (mid: string, data: Dict) => patch(`/workspace/members/${mid}`, data),
   deleteMember: (mid: string) => del(`/workspace/members/${mid}`),
