@@ -44,6 +44,8 @@ export default function Home() {
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [members, setMembers] = useState<Member[]>([])
+  // Assignable members for the ACTIVE board (server-filtered for restricted boards).
+  const [projectMembers, setProjectMembers] = useState<Member[]>([])
   const [currentMemberId, _setCurrentMemberId] = useState<string | null>(null)
   const [activeProject, setActiveProject] = useState<Project | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
@@ -125,12 +127,14 @@ export default function Home() {
   async function loadProject(project: Project) {
     setActiveProject(project)
     // include_children=1 → subtasks show up as their own cards on the Board/Spreadsheet/etc.
-    const [iss, sts, lbls, cyc, mods] = await Promise.all([
+    const [iss, sts, lbls, cyc, mods, pMembers] = await Promise.all([
       api.getIssues(project.id, { include_children: '1' }),
       api.getStates(project.id),
       api.getLabels(project.id),
       api.getCycles(project.id),
       api.getModules(project.id),
+      // Restricted boards only offer their attached members for assignment.
+      api.getProjectAssignees(project.id).catch(() => null),
     ])
     setIssues(iss)
     setTotalIssueCount(iss.length)
@@ -138,6 +142,7 @@ export default function Home() {
     setLabels(lbls)
     setMilestones(cyc)
     setEpics(mods)
+    setProjectMembers(Array.isArray(pMembers) ? pMembers : [])
   }
 
   // Re-fetch milestones/epics so issue side-changes (set from issue picker) flow back in.
@@ -505,7 +510,7 @@ export default function Home() {
                   issues={issues}
                   states={states}
                   labels={labels}
-                  members={members}
+                  members={projectMembers}
                   milestones={milestones.map(m => ({ id: m.id, name: m.name }))}
                   epics={epics.map(e => ({ id: e.id, name: e.name }))}
                   project={activeProject}
@@ -524,7 +529,7 @@ export default function Home() {
                   issues={issues}
                   states={states}
                   labels={labels}
-                  members={members}
+                  members={projectMembers}
                   project={activeProject}
                   onClickIssue={openIssueDetail}
                   onUpdateIssue={async (id, patch) => {
@@ -620,7 +625,7 @@ export default function Home() {
           project={activeProject}
           states={states}
           labels={labels}
-          members={members}
+          members={projectMembers}
           milestones={milestones.map(m => ({ id: m.id, name: m.name }))}
           epics={epics.map(e => ({ id: e.id, name: e.name }))}
           currentMember={currentMember}
@@ -638,7 +643,7 @@ export default function Home() {
         <CreateIssueModal
           states={states}
           labels={labels}
-          members={members}
+          members={projectMembers}
           currentMember={currentMember}
           defaultStateId={createIssueStateId}
           parentId={createIssueParent?.id}
@@ -682,14 +687,17 @@ export default function Home() {
           project={activeProject}
           states={states}
           labels={labels}
+          allMembers={members}
+          currentMember={currentMember}
           onClose={() => setShowProjectSettings(false)}
           onChange={async () => {
-            // Project metadata or states/labels may have changed — refresh both.
+            // Project metadata, states/labels or board access may have changed.
             const projs = await api.getProjects()
             setProjects(projs)
             const updatedActive = projs.find((p: any) => p.id === activeProject.id) ?? activeProject
             setActiveProject(updatedActive)
             await refreshStatesAndLabels()
+            setProjectMembers(await api.getProjectAssignees(activeProject.id).catch(() => members))
           }}
           onDelete={async () => {
             setShowProjectSettings(false)
