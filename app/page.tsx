@@ -14,6 +14,7 @@ import GanttView from '@/components/views/gantt/GanttView'
 import CyclesPage from '@/components/cycles/CyclesPage'
 import ModulesPage from '@/components/modules/ModulesPage'
 import DashboardView from '@/components/dashboard/DashboardView'
+import SprintsView from '@/components/dashboard/SprintsView'
 import WikiView from '@/components/wiki/WikiView'
 import AttendanceView from '@/components/attendance/AttendanceView'
 import ChatView from '@/components/chat/ChatView'
@@ -30,12 +31,12 @@ import CreateProjectModal from '@/components/project/CreateProjectModal'
 import ProjectSettingsModal from '@/components/project/ProjectSettingsModal'
 import CreateMemberModal from '@/components/workspace/CreateMemberModal'
 
-type View = 'dashboard' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'chat' | 'announcements' | 'exams'
+type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'chat' | 'announcements' | 'exams'
   | 'ai-syllabus' | 'ai-workbook' | 'ai-dictionary' | 'ai-assessment' | 'ai-answer-key'
 
 // Views where the project-header "New issue" button makes no sense.
 const NO_NEW_ISSUE_VIEWS: View[] = [
-  'cycles', 'modules', 'dashboard', 'wiki', 'attendance', 'chat', 'announcements', 'exams',
+  'cycles', 'modules', 'dashboard', 'sprints', 'wiki', 'attendance', 'chat', 'announcements', 'exams',
   'ai-syllabus', 'ai-workbook', 'ai-dictionary', 'ai-assessment', 'ai-answer-key',
 ]
 
@@ -486,6 +487,14 @@ export default function Home() {
                     const p = projects.find(x => x.id === pid)
                     if (p && p.id !== activeProject.id) setActiveProject(p)
                   }}
+                  onClickIssue={async (pid, iid) => {
+                    const full = await api.getIssue(pid, iid)
+                    setSelectedIssue(full)
+                  }}
+                />
+              )}
+              {view === 'sprints' && (
+                <SprintsView
                   onClickIssue={async (pid, iid) => {
                     const full = await api.getIssue(pid, iid)
                     setSelectedIssue(full)
