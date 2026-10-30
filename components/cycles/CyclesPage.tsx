@@ -54,8 +54,8 @@ function CycleCard({ cycle, projectId, onView }: { cycle: Cycle; projectId: stri
   )
 }
 
-function CycleDetail({ cycle: initialCycle, project, isOwner, onClose, onClickIssue, onChange, onDeleted }: {
-  cycle: Cycle; project: Project; isOwner: boolean; onClose: () => void; onClickIssue: (i: Issue) => void; onChange?: () => void; onDeleted?: () => void
+function CycleDetail({ cycle: initialCycle, project, canManage, onClose, onClickIssue, onChange, onDeleted }: {
+  cycle: Cycle; project: Project; canManage: boolean; onClose: () => void; onClickIssue: (i: Issue) => void; onChange?: () => void; onDeleted?: () => void
 }) {
   const [cycle, setCycle] = useState(initialCycle)
   const [issues, setIssues] = useState<Issue[]>([])
@@ -125,7 +125,7 @@ function CycleDetail({ cycle: initialCycle, project, isOwner, onClose, onClickIs
   }
 
   async function deleteThisCycle() {
-    if (!isOwner) return
+    if (!canManage) return
     if (!confirm(`Delete milestone "${cycle.name}"? Its ${issues.length} linked issue${issues.length === 1 ? '' : 's'} will remain but lose their milestone link. This cannot be undone.`)) return
     try {
       await api.deleteCycle(project.id, cycle.id)
@@ -159,7 +159,7 @@ function CycleDetail({ cycle: initialCycle, project, isOwner, onClose, onClickIs
             <p className="text-xs text-gray-500">{Math.round((cycle.progress ?? 0))}% complete</p>
             <ProgressBar pct={(cycle.progress ?? 0)} />
           </div>
-          {!editing && isOwner && (
+          {!editing && canManage && (
             <button onClick={beginEdit} title="Edit milestone"
               className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +167,7 @@ function CycleDetail({ cycle: initialCycle, project, isOwner, onClose, onClickIs
               </svg>
             </button>
           )}
-          {!editing && isOwner && (
+          {!editing && canManage && (
             <button onClick={deleteThisCycle} title="Delete milestone"
               className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,7 +280,8 @@ function CycleDetail({ cycle: initialCycle, project, isOwner, onClose, onClickIs
 }
 
 export default function CyclesPage({ project, currentMember, onClickIssue }: Props) {
-  const isOwner = currentMember?.role === 'owner'
+  // Planning structure is manager+ — matches the API's requireManager guard.
+  const canManage = ['owner','admin','manager'].includes(currentMember?.role ?? '')
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [selected, setSelected] = useState<Cycle | null>(null)
   const [creating, setCreating] = useState(false)
@@ -322,11 +323,13 @@ export default function CyclesPage({ project, currentMember, onClickIssue }: Pro
             <h2 className="text-xl font-semibold text-gray-900">Milestones</h2>
             <p className="text-sm text-gray-500 mt-0.5">Time-boxed delivery goals</p>
           </div>
-          <button onClick={() => setCreating(c => !c)}
-            className="flex items-center gap-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-            New milestone
-          </button>
+          {canManage && (
+            <button onClick={() => setCreating(c => !c)}
+              className="flex items-center gap-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+              New milestone
+            </button>
+          )}
         </div>
 
         {creating && (
@@ -390,7 +393,7 @@ export default function CyclesPage({ project, currentMember, onClickIssue }: Pro
         <CycleDetail
           cycle={selected}
           project={project}
-          isOwner={isOwner}
+          canManage={canManage}
           onClose={() => setSelected(null)}
           onClickIssue={i => { setSelected(null); onClickIssue(i) }}
           onChange={async () => setCycles(await api.getCycles(project.id))}

@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import type { Workspace, Project, Member } from '@/lib/types'
+import type { Workspace, Project, Member, Company } from '@/lib/types'
 import { Avatar } from '@/components/ui/Avatar'
 import ClockWidget from './ClockWidget'
 import { api } from '@/lib/api'
@@ -24,6 +24,10 @@ interface Props {
   overdueCount: number
   /** Per-role allowed menu ids — filters NAV_ITEMS for the current member. */
   rolePermissions?: Record<string, string[]>
+  /** Company entity — its master feature switches cap every role's menus. */
+  company?: Company | null
+  /** Whether the current member may create boards (owner/admin/manager). */
+  canCreateBoard?: boolean
   /** True when the current member has at least one exam assigned. The Exams
       menu is visible only to owners (management) or assignees — everyone else
       never learns it exists. */
@@ -71,13 +75,16 @@ const AI_CHILDREN: NavItem[] = [
 ]
 const ANSWER_KEY_ROLES = ['owner', 'admin', 'manager']
 
-export default function Sidebar({ workspace, projects, members, activeProject, activeView, currentMember, overdueCount, rolePermissions, examAssigned, onSelectProject, onSelectView, onCreateProject, onCreateMember, onSwitchUser, onOpenWorkspaceSettings, onSignOut }: Props) {
-  // If permissions are loaded and the current member has a role config, filter the nav.
-  // Otherwise default to all items (safe fallback before permissions arrive).
+export default function Sidebar({ workspace, projects, members, activeProject, activeView, currentMember, overdueCount, rolePermissions, company, canCreateBoard, examAssigned, onSelectProject, onSelectView, onCreateProject, onCreateMember, onSwitchUser, onOpenWorkspaceSettings, onSignOut }: Props) {
+  // Menu visibility is the hierarchy top-down: a feature must be ON for the
+  // company AND granted to the member's role. Missing data defaults to
+  // visible (safe fallback before company/permissions arrive).
   const allowedMenus = (currentMember && rolePermissions?.[currentMember.role]) || null
-  const isAllowed = (id: string) => !allowedMenus || allowedMenus.includes(id)
-  // Exams: purely assignment-driven visibility (owners always see it to manage).
-  const examsVisible = currentMember?.role === 'owner' || !!examAssigned
+  const featureOn = (id: string) => company?.features?.[id] !== false
+  const isAllowed = (id: string) => featureOn(id) && (!allowedMenus || allowedMenus.includes(id))
+  // Exams: assignment-driven visibility (owners always see it to manage),
+  // capped by the company's AI feature switch.
+  const examsVisible = featureOn('ai') && (currentMember?.role === 'owner' || !!examAssigned)
   const visibleMain: NavItem[] = [
     ...MAIN_NAV.filter(it => isAllowed(it.id)),
     ...(examsVisible ? [{ id: 'exams' as View, label: 'Exams', icon: <ExamIcon /> }] : []),
@@ -150,10 +157,10 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-black/20">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8 h-8 rounded-md bg-white text-[#3F0E40] flex items-center justify-center text-sm font-extrabold shrink-0 shadow-sm">
-            {workspace?.name?.[0]?.toUpperCase() ?? 'P'}
+            {(company?.name ?? workspace?.name)?.[0]?.toUpperCase() ?? 'P'}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-extrabold truncate text-white leading-tight">{workspace?.name ?? 'My Workspace'}</p>
+            <p className="text-[15px] font-extrabold truncate text-white leading-tight">{company?.name ?? workspace?.name ?? 'My Workspace'}</p>
             {currentMember && (
               <p className="text-[11px] text-white/60 leading-tight truncate capitalize">
                 {currentMember.name} <span className="text-white/40 normal-case">· {currentMember.role}</span>
@@ -220,10 +227,13 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
       <div className="pt-3 pb-1">
         <div className="flex items-center justify-between px-4 mb-1">
           <span className="text-[11px] font-bold tracking-wide text-white/60">Projects</span>
-          <button onClick={onCreateProject} title="New project"
-            className="text-white/50 hover:text-white transition-colors w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/></svg>
-          </button>
+          {/* Board creation is manager+ — hidden for members/viewers (server enforces too). */}
+          {canCreateBoard && (
+            <button onClick={onCreateProject} title="New project"
+              className="text-white/50 hover:text-white transition-colors w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/></svg>
+            </button>
+          )}
         </div>
         <div>
           {projects.map(p => {
@@ -346,9 +356,12 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
                 </svg>
               </button>
             )}
-            <button onClick={onCreateMember} className="text-white/30 hover:text-white/70 transition-colors">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-            </button>
+            {/* Adding users is a company-level action — owner only (server enforces too). */}
+            {currentMember?.role === 'owner' && (
+              <button onClick={onCreateMember} className="text-white/30 hover:text-white/70 transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+              </button>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5">

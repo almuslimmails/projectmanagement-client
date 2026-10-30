@@ -1,15 +1,17 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import type { Member, Role } from '@/lib/types'
+import type { Member, Role, Company } from '@/lib/types'
 import { api } from '@/lib/api'
 import { Avatar } from '@/components/ui/Avatar'
 
 interface Props {
   members: Member[]
   currentMember: Member | null
+  company?: Company | null
   onClose: () => void
   onMembersChanged: () => void | Promise<void>
   onPermissionsChanged?: (perms: Record<string, string[]>) => void
+  onCompanyChanged?: (c: Company) => void
 }
 
 const ROLES: Role[] = ['owner', 'admin', 'manager', 'member', 'viewer']
@@ -29,8 +31,8 @@ const MENU_OPTIONS: { id: string; label: string }[] = [
   { id: 'ai',            label: 'Artificial Intelligence' },
 ]
 
-export default function WorkspaceSettingsModal({ members, currentMember, onClose, onMembersChanged, onPermissionsChanged }: Props) {
-  const [tab, setTab] = useState<'members' | 'roles' | 'data'>('members')
+export default function WorkspaceSettingsModal({ members, currentMember, company, onClose, onMembersChanged, onPermissionsChanged, onCompanyChanged }: Props) {
+  const [tab, setTab] = useState<'company' | 'members' | 'roles' | 'data'>('company')
   const [busy, setBusy] = useState(false)
   const isOwner = currentMember?.role === 'owner'
 
@@ -45,23 +47,25 @@ export default function WorkspaceSettingsModal({ members, currentMember, onClose
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[85vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <div>
-            <h2 className="font-semibold text-gray-900">Workspace settings</h2>
-            {!isOwner && <p className="text-[11px] text-gray-500 mt-0.5">Read-only — only owners can change roles or permissions.</p>}
+            <h2 className="font-semibold text-gray-900">Company settings{company?.name ? ` — ${company.name}` : ''}</h2>
+            {!isOwner && <p className="text-[11px] text-gray-500 mt-0.5">Read-only — only owners can change the company, roles or permissions.</p>}
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
 
         <div className="flex gap-2 px-6 pt-3 border-b shrink-0">
-          {(isOwner ? ['members','roles','data'] as const : ['members','roles'] as const).map(t => (
+          {(isOwner ? ['company','members','roles','data'] as const : ['company','members','roles'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`text-sm px-3 py-2 border-b-2 -mb-px transition-colors capitalize ${tab === t ? 'border-indigo-600 text-indigo-700 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-              {t === 'members' ? `Members (${members.length})` : t === 'roles' ? 'Role permissions' : 'Demo data'}
+              {t === 'company' ? 'Company' : t === 'members' ? `Members (${members.length})` : t === 'roles' ? 'Role permissions' : 'Demo data'}
             </button>
           ))}
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-          {tab === 'members'
+          {tab === 'company'
+            ? <CompanyTab company={company ?? null} isOwner={isOwner} busy={busy} run={run} onChanged={onCompanyChanged} />
+            : tab === 'members'
             ? <MembersTab members={members} isOwner={isOwner} busy={busy} run={run} onChanged={onMembersChanged} />
             : tab === 'roles'
             ? <RolePermissionsTab isOwner={isOwner} busy={busy} run={run} onChanged={onPermissionsChanged} />
@@ -71,6 +75,88 @@ export default function WorkspaceSettingsModal({ members, currentMember, onClose
         <div className="flex items-center justify-end gap-3 px-6 py-3 border-t bg-gray-50 shrink-0">
           <button onClick={onClose} className="text-sm text-gray-600 hover:bg-gray-200 px-4 py-2 rounded-lg">Close</button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Company tab ─────────────────────────────────────────────────────────────
+// The entity above everything else. Its master feature switches cap every
+// role: a feature off here disappears for everyone, owner included, and the
+// API answers 403 on its routes. Hierarchy: Company → Roles → Board access → Cards.
+
+function CompanyTab({ company, isOwner, busy, run, onChanged }: {
+  company: Company | null; isOwner: boolean; busy: boolean
+  run: (fn: () => Promise<unknown>) => Promise<void>
+  onChanged?: (c: Company) => void
+}) {
+  const [name, setName] = useState(company?.name ?? '')
+  useEffect(() => { setName(company?.name ?? '') }, [company?.name])
+
+  if (!company) return <p className="text-sm text-gray-500">Loading company…</p>
+
+  function saveName() {
+    const trimmed = name.trim()
+    if (!trimmed || trimmed === company!.name) return
+    run(async () => {
+      const fresh = await api.updateCompany({ name: trimmed }) as Company
+      onChanged?.(fresh)
+    })
+  }
+
+  function toggleFeature(id: string) {
+    const next = !(company!.features[id] !== false)
+    run(async () => {
+      const fresh = await api.setCompanyFeatures({ [id]: next }) as Company
+      onChanged?.(fresh)
+    })
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Profile */}
+      <div>
+        <label className="text-[11px] uppercase tracking-widest text-gray-400 font-semibold block mb-1.5">Company name</label>
+        <div className="flex gap-2">
+          <input value={name} onChange={e => setName(e.target.value)}
+            disabled={!isOwner || busy}
+            onKeyDown={e => e.key === 'Enter' && saveName()}
+            className="flex-1 text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-gray-50 disabled:text-gray-500" />
+          {isOwner && (
+            <button onClick={saveName} disabled={busy || !name.trim() || name.trim() === company.name}
+              className="text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 px-4 rounded-lg">Save</button>
+          )}
+        </div>
+      </div>
+
+      {/* Hierarchy explainer */}
+      <div className="border border-indigo-100 bg-indigo-50/40 rounded-xl px-4 py-3">
+        <p className="text-[11px] font-semibold text-indigo-900 uppercase tracking-wider mb-1">Access hierarchy</p>
+        <p className="text-xs text-indigo-900/80">
+          <b>Company features</b> → <b>Role permissions</b> → <b>Board access</b> → <b>Card visibility</b>.
+          A feature switched off here disappears for <b>every role, owners included</b>, and its API is blocked —
+          role permissions can only narrow further, never widen past these switches.
+        </p>
+      </div>
+
+      {/* Feature master switches */}
+      <div>
+        <label className="text-[11px] uppercase tracking-widest text-gray-400 font-semibold block mb-2">Features</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {company.catalog.map(f => {
+            const on = company.features[f.id] !== false
+            return (
+              <label key={f.id}
+                className={`flex items-center justify-between gap-3 border rounded-lg px-3 py-2 ${on ? 'border-gray-200 bg-white' : 'border-gray-200 bg-gray-50'} ${isOwner ? 'cursor-pointer hover:border-indigo-200' : 'cursor-default'}`}>
+                <span className={`text-sm ${on ? 'text-gray-800' : 'text-gray-400 line-through'}`}>{f.label}</span>
+                <input type="checkbox" checked={on} disabled={!isOwner || busy}
+                  onChange={() => toggleFeature(f.id)}
+                  className="rounded cursor-pointer disabled:cursor-not-allowed" />
+              </label>
+            )
+          })}
+        </div>
+        <p className="text-[11px] text-gray-400 mt-2">Changes are saved immediately and take effect on the next page load for signed-in users.</p>
       </div>
     </div>
   )

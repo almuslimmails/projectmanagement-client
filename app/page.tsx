@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import type { Workspace, Project, Issue, State, Label, Member, Cycle, Module } from '@/lib/types'
+import type { Workspace, Project, Issue, State, Label, Member, Cycle, Module, Company } from '@/lib/types'
 import { api, downloadFile, getCurrentMemberId, setCurrentMemberId } from '@/lib/api'
 import { isOverdue } from '@/lib/utils'
 import { EMPTY_FILTERS, type IssueFilters } from '@/components/issue/IssueFilterBar'
@@ -76,6 +76,8 @@ export default function Home() {
   const [reloading, setReloading] = useState(false)
   const [showWorkspaceSettings, setShowWorkspaceSettings] = useState(false)
   const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>({})
+  // Company entity — master feature switches that cap every role's menus.
+  const [company, setCompany] = useState<Company | null>(null)
   const [loading, setLoading] = useState(true)
 
   // ── Bootstrap ────────────────────────────────────────────────────
@@ -96,10 +98,14 @@ export default function Home() {
           window.location.href = '/sign-in'
           return
         }
-        const [projs, mems, perms] = await Promise.all([api.getProjects(), api.getMembers(), api.getRolePermissions()])
+        const [projs, mems, perms, comp] = await Promise.all([
+          api.getProjects(), api.getMembers(), api.getRolePermissions(),
+          api.getCompany().catch(() => null),
+        ])
         setProjects(projs)
         setMembers(mems)
         setRolePermissions(perms ?? {})
+        setCompany(comp ?? null)
 
         // Always start as the real signed-in member. Owner impersonation (via the sidebar
         // picker) is session-only — it must NOT persist across reloads, otherwise the owner
@@ -414,7 +420,9 @@ export default function Home() {
         currentMember={currentMember}
         overdueCount={overdueCount}
         rolePermissions={rolePermissions}
+        company={company}
         examAssigned={examAssigned}
+        canCreateBoard={canEditCards}
         onSelectProject={async p => { await loadProject(p); setView('board') }}
         onSelectView={setView}
         onCreateProject={() => setShowCreateProject(true)}
@@ -618,11 +626,15 @@ export default function Home() {
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Tathkarah Project Tracker</h2>
                 <p className="text-gray-500">Create your first project to get started</p>
               </div>
-              <button onClick={() => setShowCreateProject(true)}
-                className="flex items-center gap-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl transition-colors font-medium shadow-md">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-                Create project
-              </button>
+              {canEditCards ? (
+                <button onClick={() => setShowCreateProject(true)}
+                  className="flex items-center gap-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl transition-colors font-medium shadow-md">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                  Create project
+                </button>
+              ) : (
+                <p className="text-xs text-gray-400">Ask a manager to set up the first board.</p>
+              )}
             </div>
           </>
         )}
@@ -685,9 +697,11 @@ export default function Home() {
         <WorkspaceSettingsModal
           members={members}
           currentMember={currentMember}
+          company={company}
           onClose={() => setShowWorkspaceSettings(false)}
           onMembersChanged={async () => setMembers(await api.getMembers())}
           onPermissionsChanged={(perms) => setRolePermissions(perms)}
+          onCompanyChanged={(c) => setCompany(c)}
         />
       )}
 
