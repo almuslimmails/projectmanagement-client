@@ -193,6 +193,7 @@ export const api = {
   getDashboard: (pid: string) => get(`/projects/${pid}/dashboard`),
   getWorkspaceOverview: () => get('/dashboard/overview'),
   getAgentFeed: () => get('/dashboard/agent-feed'),
+  getSprints: () => get('/dashboard/sprints'),
 
   // issues
   getIssues: (pid: string, filters?: Record<string, string>) =>
