@@ -59,8 +59,8 @@ function ModuleCard({ mod, onView }: { mod: Module; onView: () => void }) {
   )
 }
 
-function ModuleDetail({ mod: initialMod, project, isOwner, onClose, onClickIssue, onChange, onDeleted }: {
-  mod: Module; project: Project; isOwner: boolean; onClose: () => void; onClickIssue: (i: Issue) => void; onChange?: () => void; onDeleted?: () => void
+function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIssue, onChange, onDeleted }: {
+  mod: Module; project: Project; canManage: boolean; onClose: () => void; onClickIssue: (i: Issue) => void; onChange?: () => void; onDeleted?: () => void
 }) {
   const [mod, setMod] = useState(initialMod)
   const [issues, setIssues] = useState<Issue[]>([])
@@ -112,7 +112,7 @@ function ModuleDetail({ mod: initialMod, project, isOwner, onClose, onClickIssue
   }
 
   async function deleteThisModule() {
-    if (!isOwner) return
+    if (!canManage) return
     if (!confirm(`Delete epic "${mod.name}"? Its ${issues.length} linked issue${issues.length === 1 ? '' : 's'} will remain but lose their epic link. This cannot be undone.`)) return
     try {
       await api.deleteModule(project.id, mod.id)
@@ -162,7 +162,7 @@ function ModuleDetail({ mod: initialMod, project, isOwner, onClose, onClickIssue
               <p className="text-xs text-gray-500">{Math.round((mod.progress ?? 0))}% complete</p>
               <ProgressBar pct={(mod.progress ?? 0)} />
             </div>
-            {!editing && isOwner && (
+            {!editing && canManage && (
               <button onClick={beginEdit} title="Edit epic"
                 className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +170,7 @@ function ModuleDetail({ mod: initialMod, project, isOwner, onClose, onClickIssue
                 </svg>
               </button>
             )}
-            {!editing && isOwner && (
+            {!editing && canManage && (
               <button onClick={deleteThisModule} title="Delete epic"
                 className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +285,8 @@ function ModuleDetail({ mod: initialMod, project, isOwner, onClose, onClickIssue
 }
 
 export default function ModulesPage({ project, currentMember, onClickIssue }: Props) {
-  const isOwner = currentMember?.role === 'owner'
+  // Planning structure is manager+ — matches the API's requireManager guard.
+  const canManage = ['owner','admin','manager'].includes(currentMember?.role ?? '')
   const [modules, setModules] = useState<Module[]>([])
   const [selected, setSelected] = useState<Module | null>(null)
   const [creating, setCreating] = useState(false)
@@ -326,11 +327,13 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
             <h2 className="text-xl font-semibold text-gray-900">Epics</h2>
             <p className="text-sm text-gray-500 mt-0.5">Feature areas and workstreams</p>
           </div>
-          <button onClick={() => setCreating(c => !c)}
-            className="flex items-center gap-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-            New epic
-          </button>
+          {canManage && (
+            <button onClick={() => setCreating(c => !c)}
+              className="flex items-center gap-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+              New epic
+            </button>
+          )}
         </div>
 
         {creating && (
@@ -405,7 +408,7 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
         <ModuleDetail
           mod={selected}
           project={project}
-          isOwner={isOwner}
+          canManage={canManage}
           onClose={() => setSelected(null)}
           onClickIssue={i => { setSelected(null); onClickIssue(i) }}
           onChange={async () => setModules(await api.getModules(project.id))}

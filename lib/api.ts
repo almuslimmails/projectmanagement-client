@@ -158,6 +158,11 @@ export const api = {
   },
   logout: () => { setToken(null); setCurrentMemberId(null) },
 
+  // company — the entity above the workspace; master feature switches.
+  getCompany: () => get('/company'),
+  updateCompany: (data: Dict) => patch('/company', data),
+  setCompanyFeatures: (features: Record<string, boolean>) => r('PUT', '/company/features', { features }),
+
   // workspace
   getWorkspace: () => get('/workspace'),
   createWorkspace: (data: { name: string; slug?: string }) =>
