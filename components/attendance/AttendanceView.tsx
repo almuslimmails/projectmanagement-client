@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { api, urlFor } from '@/lib/api'
+import { api, downloadFile } from '@/lib/api'
 import { Avatar } from '@/components/ui/Avatar'
 
 interface Session {
@@ -77,7 +77,7 @@ export default function AttendanceView({ projectId }: { projectId: string }) {
   }
 
   function exportCsv() {
-    window.open(urlFor(`/attendance/export?date=${date}`), '_blank', 'noopener')
+    downloadFile(`/attendance/export?date=${date}`).catch(e => alert(e.message))
   }
 
   // Per-status rollups for the headline strip.
