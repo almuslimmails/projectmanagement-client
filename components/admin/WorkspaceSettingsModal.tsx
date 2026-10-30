@@ -85,21 +85,39 @@ export default function WorkspaceSettingsModal({ members, currentMember, company
 // role: a feature off here disappears for everyone, owner included, and the
 // API answers 403 on its routes. Hierarchy: Company → Roles → Board access → Cards.
 
-function CompanyTab({ company, isOwner, busy, run, onChanged }: {
+function CompanyTab({ company: fromPage, isOwner, busy, run, onChanged }: {
   company: Company | null; isOwner: boolean; busy: boolean
   run: (fn: () => Promise<unknown>) => Promise<void>
   onChanged?: (c: Company) => void
 }) {
+  // Normally supplied by the page bootstrap; fetched here as a fallback so a
+  // failed bootstrap call doesn't dead-end the tab on "Loading…".
+  const [company, setCompany] = useState<Company | null>(fromPage ?? null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => { if (fromPage) setCompany(fromPage) }, [fromPage])
+  useEffect(() => {
+    if (fromPage) return
+    api.getCompany()
+      .then((c: Company) => { setCompany(c); setFailed(false); onChanged?.(c) })
+      .catch(() => setFailed(true))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromPage])
+
   const [name, setName] = useState(company?.name ?? '')
   useEffect(() => { setName(company?.name ?? '') }, [company?.name])
 
-  if (!company) return <p className="text-sm text-gray-500">Loading company…</p>
+  if (!company) {
+    return <p className="text-sm text-gray-500">
+      {failed ? 'Could not load the company — the API did not answer. Reload and try again.' : 'Loading company…'}
+    </p>
+  }
 
   function saveName() {
     const trimmed = name.trim()
     if (!trimmed || trimmed === company!.name) return
     run(async () => {
       const fresh = await api.updateCompany({ name: trimmed }) as Company
+      setCompany(fresh)
       onChanged?.(fresh)
     })
   }
@@ -108,6 +126,7 @@ function CompanyTab({ company, isOwner, busy, run, onChanged }: {
     const next = !(company!.features[id] !== false)
     run(async () => {
       const fresh = await api.setCompanyFeatures({ [id]: next }) as Company
+      setCompany(fresh)
       onChanged?.(fresh)
     })
   }

@@ -40,7 +40,7 @@ const TRACKER_API_BASE =
 // Next server can see — goes away when web login moves to JWT).
 const MIGRATED_PREFIXES = [
   '/announcements', '/dashboard', '/workspace', '/admin', '/projects',
-  '/attendance', '/chat', '/exams',
+  '/attendance', '/chat', '/exams', '/company',
 ]
 
 // Resolve a file/link URL coming from API data: external links pass through,
