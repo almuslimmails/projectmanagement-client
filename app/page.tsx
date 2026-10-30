@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import type { Workspace, Project, Issue, State, Label, Member, Cycle, Module } from '@/lib/types'
-import { api, getCurrentMemberId, setCurrentMemberId, urlFor } from '@/lib/api'
+import { api, downloadFile, getCurrentMemberId, setCurrentMemberId } from '@/lib/api'
 import { isOverdue } from '@/lib/utils'
 import { EMPTY_FILTERS, type IssueFilters } from '@/components/issue/IssueFilterBar'
 
@@ -177,12 +177,13 @@ export default function Home() {
     setTotalIssueCount(all.length)
   }
 
-  // Open the CSV export endpoint in a new tab; the Content-Disposition header triggers the download.
+  // Download the CSV export with the auth headers attached — the route is
+  // gated and returns only the viewer's own card scope.
   function handleExportIssues() {
     if (!activeProject) return
     const qs = new URLSearchParams(filtersToParams(issueFilters)).toString()
-    const url = urlFor(`/projects/${activeProject.id}/issues/export${qs ? '?' + qs : ''}`)
-    window.open(url, '_blank', 'noopener')
+    downloadFile(`/projects/${activeProject.id}/issues/export${qs ? '?' + qs : ''}`)
+      .catch(e => alert(e.message))
   }
 
   async function refreshStatesAndLabels() {

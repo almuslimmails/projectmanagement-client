@@ -59,6 +59,28 @@ export function urlFor(path: string): string {
 // Auth headers for every API call: the JWT identifies the signed-in user;
 // X-Current-Member-Id is the act-as header — the server honours it only when
 // the token belongs to an owner (powers the impersonation picker).
+// Download an API file (CSV export) with the auth headers attached — the
+// export routes are gated, so a bare window.open would come back 401.
+export async function downloadFile(path: string): Promise<void> {
+  const res = await fetch(urlFor(path), { headers: authHeaders() })
+  if (!res.ok) {
+    let msg = `export failed (${res.status})`
+    try { msg = (await res.json()).error ?? msg } catch { /* keep default */ }
+    throw new Error(msg)
+  }
+  const blob = await res.blob()
+  const cd = res.headers.get('Content-Disposition') ?? ''
+  const fname = /filename="([^"]+)"/.exec(cd)?.[1] ?? 'export.csv'
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fname
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
 export function authHeaders(): Record<string, string> {
   const headers: Record<string, string> = {}
   const token = getToken()
