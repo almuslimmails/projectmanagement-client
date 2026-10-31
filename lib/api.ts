@@ -199,6 +199,7 @@ export const api = {
   getWorkspaceOverview: () => get('/dashboard/overview'),
   getAgentFeed: () => get('/dashboard/agent-feed'),
   getSprints: () => get('/dashboard/sprints'),
+  getWorkspaceEpics: () => get('/dashboard/epics'),
 
   // issues
   getIssues: (pid: string, filters?: Record<string, string>) =>

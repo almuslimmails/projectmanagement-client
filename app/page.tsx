@@ -253,8 +253,16 @@ export default function Home() {
   // appear in the detail panel when an issue is opened from Board/List/etc.
   async function openIssueDetail(issue: Issue) {
     if (!activeProject) return
+    // Cross-board pages (workspace Epics) hand over issues from other boards:
+    // switch to the issue's board so the detail panel's states, labels and
+    // update calls all target the right project.
+    const pid = issue.project_id ?? activeProject.id
+    if (pid !== activeProject.id) {
+      const p = projects.find(x => x.id === pid)
+      if (p) loadProject(p)
+    }
     setSelectedIssue(issue)  // optimistic: paint immediately
-    const full = await api.getIssue(activeProject.id, issue.id).catch(() => null)
+    const full = await api.getIssue(pid, issue.id).catch(() => null)
     if (full) setSelectedIssue(full)
   }
 
@@ -574,6 +582,7 @@ export default function Home() {
               {view === 'modules' && (
                 <ModulesPage
                   project={activeProject}
+                  projects={projects}
                   currentMember={currentMember}
                   onClickIssue={openIssueDetail}
                 />

@@ -7,9 +7,14 @@ import IssueRow from '@/components/issue/IssueRow'
 
 interface Props {
   project: Project
+  projects: Project[]
   currentMember: Member | null
   onClickIssue: (issue: Issue) => void
 }
+
+// The epics page is workspace-wide: /dashboard/epics returns every epic on
+// every board the viewer can see, tagged with its board.
+type WorkspaceEpic = Module & { project: { id: string; name: string; identifier: string; emoji: string } }
 
 const STATUS_COLORS: Record<string, string> = {
   backlog: 'bg-gray-100 text-gray-600',
@@ -284,11 +289,11 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
   )
 }
 
-export default function ModulesPage({ project, currentMember, onClickIssue }: Props) {
+export default function ModulesPage({ project, projects, currentMember, onClickIssue }: Props) {
   // Planning structure is manager+ — matches the API's requireManager guard.
   const canManage = ['owner','admin','manager'].includes(currentMember?.role ?? '')
-  const [modules, setModules] = useState<Module[]>([])
-  const [selected, setSelected] = useState<Module | null>(null)
+  const [epics, setEpics] = useState<WorkspaceEpic[] | null>(null)
+  const [selected, setSelected] = useState<WorkspaceEpic | null>(null)
   const [creating, setCreating] = useState(false)
   const EMPTY_FORM = { name: '', description: '', status: 'backlog', start_date: '', end_date: '' }
   const [form, setForm] = useState(EMPTY_FORM)
@@ -297,9 +302,17 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
   const dateError = validateDateOrder(form.start_date, form.end_date)
   const canCreate = !nameError && !dateError && form.name.trim().length > 0
 
-  useEffect(() => {
-    api.getModules(project.id).then(setModules)
-  }, [project.id])
+  const reload = () => api.getWorkspaceEpics().then(setEpics)
+  useEffect(() => { reload() }, [])
+
+  // One section per board, the active board first so "my" epics lead.
+  const groups: { project: WorkspaceEpic['project']; epics: WorkspaceEpic[] }[] = []
+  for (const e of epics ?? []) {
+    let g = groups.find(x => x.project.id === e.project.id)
+    if (!g) { g = { project: e.project, epics: [] }; groups.push(g) }
+    g.epics.push(e)
+  }
+  groups.sort((a, b) => (a.project.id === project.id ? -1 : b.project.id === project.id ? 1 : 0))
 
   function cancelCreate() {
     setForm(EMPTY_FORM)
@@ -316,7 +329,7 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
     }
     setForm(EMPTY_FORM)
     setCreating(false)
-    setModules(await api.getModules(project.id))
+    await reload()
   }
 
   return (
@@ -325,7 +338,7 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Epics</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Feature areas and workstreams</p>
+            <p className="text-sm text-gray-500 mt-0.5">Feature areas and workstreams across all your boards</p>
           </div>
           {canManage && (
             <button onClick={() => setCreating(c => !c)}
@@ -338,7 +351,7 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
 
         {creating && (
           <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 mb-5">
-            <h3 className="font-semibold text-gray-800 mb-4">Create epic</h3>
+            <h3 className="font-semibold text-gray-800 mb-4">Create epic — {project.emoji} {project.name}</h3>
             <div className="space-y-3">
               <div>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -387,19 +400,29 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {modules.map(mod => (
-            <ModuleCard key={mod.id} mod={mod} onView={() => setSelected(mod)} />
-          ))}
-        </div>
+        {epics === null && <p className="text-sm text-gray-400">Loading epics…</p>}
 
-        {modules.length === 0 && !creating && (
+        {groups.map(g => (
+          <div key={g.project.id} className="mb-8">
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+              {g.project.emoji} {g.project.name} <span className="text-gray-300 font-mono normal-case tracking-normal">{g.project.identifier}</span>
+              <span className="text-gray-300 normal-case tracking-normal"> · {g.epics.length}</span>
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {g.epics.map(mod => (
+                <ModuleCard key={mod.id} mod={mod} onView={() => setSelected(mod)} />
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {epics !== null && epics.length === 0 && !creating && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <svg className="w-14 h-14 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
             </svg>
-            <p className="text-gray-400">No modules yet</p>
-            <button onClick={() => setCreating(true)} className="mt-2 text-sm text-indigo-600 hover:underline">Create your first module</button>
+            <p className="text-gray-400">No epics on any of your boards yet</p>
+            {canManage && <button onClick={() => setCreating(true)} className="mt-2 text-sm text-indigo-600 hover:underline">Create your first epic</button>}
           </div>
         )}
       </div>
@@ -407,12 +430,12 @@ export default function ModulesPage({ project, currentMember, onClickIssue }: Pr
       {selected && (
         <ModuleDetail
           mod={selected}
-          project={project}
+          project={projects.find(p => p.id === selected.project.id) ?? project}
           canManage={canManage}
           onClose={() => setSelected(null)}
           onClickIssue={i => { setSelected(null); onClickIssue(i) }}
-          onChange={async () => setModules(await api.getModules(project.id))}
-          onDeleted={async () => setModules(await api.getModules(project.id))}
+          onChange={reload}
+          onDeleted={reload}
         />
       )}
     </div>
