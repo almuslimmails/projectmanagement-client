@@ -21,6 +21,7 @@ import ChatView from '@/components/chat/ChatView'
 import ProductTour, { shouldAutoShowTour } from '@/components/tour/ProductTour'
 import WelcomeSplash from '@/components/tour/WelcomeSplash'
 import ForceClockInGate from '@/components/attendance/ForceClockInGate'
+import ClockTrackerPage from '@/components/attendance/ClockTrackerPage'
 import AnnouncementTicker from '@/components/announcements/AnnouncementTicker'
 import AnnouncementsPage from '@/components/announcements/AnnouncementsPage'
 import AIDocView, { AI_DOCS } from '@/components/ai/AIDocView'
@@ -32,12 +33,12 @@ import CreateProjectModal from '@/components/project/CreateProjectModal'
 import ProjectSettingsModal from '@/components/project/ProjectSettingsModal'
 import CreateMemberModal from '@/components/workspace/CreateMemberModal'
 
-type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'chat' | 'announcements' | 'exams'
+type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
   | 'ai-syllabus' | 'ai-workbook' | 'ai-dictionary' | 'ai-assessment' | 'ai-answer-key'
 
 // Views where the project-header "New issue" button makes no sense.
 const NO_NEW_ISSUE_VIEWS: View[] = [
-  'cycles', 'modules', 'dashboard', 'sprints', 'wiki', 'attendance', 'chat', 'announcements', 'exams',
+  'cycles', 'modules', 'dashboard', 'sprints', 'wiki', 'attendance', 'clock', 'chat', 'announcements', 'exams',
   'ai-syllabus', 'ai-workbook', 'ai-dictionary', 'ai-assessment', 'ai-answer-key',
 ]
 
@@ -237,6 +238,19 @@ export default function Home() {
 
   const currentMember = useMemo(() => members.find(m => m.id === currentMemberId) ?? null, [members, currentMemberId])
   const loginMember = useMemo(() => members.find(m => m.id === loginMemberId) ?? null, [members, loginMemberId])
+
+  // A view whose menu the acting member can't see (role switch, impersonation,
+  // restored localStorage view) bounces to their first allowed menu — the API
+  // already refuses the data, this just stops a stale screen lingering.
+  useEffect(() => {
+    if (!currentMember) return
+    const allowed = rolePermissions?.[currentMember.role]
+    if (!allowed) return
+    const menuId = view.startsWith('ai-') ? 'ai' : view
+    if (allowed.includes(menuId)) return
+    const VIEWS = ['board', 'dashboard', 'list', 'sprints', 'wiki', 'chat']
+    setView((VIEWS.find(v => allowed.includes(v)) ?? 'board') as View)
+  }, [currentMember, rolePermissions, view])
   const overdueCount = useMemo(() => issues.filter(i => isOverdue(i.due_date) && i.state?.group_type !== 'completed' && i.state?.group_type !== 'cancelled').length, [issues])
 
   // Whether the current member has any exam assigned — drives the Exams menu's
@@ -610,6 +624,9 @@ export default function Home() {
               )}
               {view === 'attendance' && (
                 <AttendanceView projectId={activeProject.id} />
+              )}
+              {view === 'clock' && (
+                <ClockTrackerPage />
               )}
               {view === 'announcements' && (
                 <AnnouncementsPage members={members} currentMember={currentMember} />

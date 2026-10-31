@@ -11,7 +11,7 @@ const STATUS_COLOR: Record<string, string> = {
   offline: 'bg-gray-500',
 }
 
-type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'chat' | 'announcements' | 'exams'
+type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
   | 'ai-syllabus' | 'ai-workbook' | 'ai-dictionary' | 'ai-assessment' | 'ai-answer-key'
 
 interface Props {
@@ -62,6 +62,7 @@ const REPORTS_CHILDREN: NavItem[] = [
   { id: 'spreadsheet', label: 'Spreadsheet', icon: <SpreadIcon /> },
   { id: 'gantt', label: 'Gantt', icon: <GanttIcon /> },
   { id: 'attendance', label: 'Attendance', icon: <AttendanceIcon /> },
+  { id: 'clock', label: 'Clock Tracker', icon: <ClockTrackerIcon /> },
 ]
 
 // "Artificial Intelligence" — collapsible group of the bundled AI Foundations
@@ -409,5 +410,6 @@ function ExamIcon() { return <svg className="w-4 h-4" fill="none" stroke="curren
 function AIIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/></svg> }
 function DocIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg> }
 function AttendanceIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> }
+function ClockTrackerIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6l4 2m4 4.5V21h-3.5M4 3.5L6.5 6M20 3.5L17.5 6M12 21a8 8 0 100-16 8 8 0 000 16z"/></svg> }
 function ChatIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.9 7.9 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> }
 function ReportsIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> }

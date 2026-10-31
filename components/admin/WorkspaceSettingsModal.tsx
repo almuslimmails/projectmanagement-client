@@ -26,6 +26,7 @@ const MENU_OPTIONS: { id: string; label: string }[] = [
   { id: 'modules',     label: 'Epics' },
   { id: 'wiki',        label: 'Wiki' },
   { id: 'attendance',  label: 'Attendance' },
+  { id: 'clock',       label: 'Clock Tracker' },
   { id: 'chat',        label: 'Chat' },
   { id: 'announcements', label: 'Announcements' },
   { id: 'ai',            label: 'Artificial Intelligence' },
