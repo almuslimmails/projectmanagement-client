@@ -36,10 +36,14 @@ export default function ClockWidget() {
   }
 
   // Initial fetch + 30s poll (covers external state changes; local ticking handled below).
+  // 'tracker:clock-changed' fires when something else clocks the member in or out
+  // (the forced clock-in gate) so the widget updates immediately instead of on the
+  // next poll.
   useEffect(() => {
     refresh()
     const t = setInterval(refresh, 30_000)
-    return () => clearInterval(t)
+    window.addEventListener('tracker:clock-changed', refresh)
+    return () => { clearInterval(t); window.removeEventListener('tracker:clock-changed', refresh) }
   }, [])
 
   // 1s tick so the on-screen timer feels alive when a session is open.

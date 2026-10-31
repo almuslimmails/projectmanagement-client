@@ -36,6 +36,8 @@ export default function ForceClockInGate({ currentMember, enabled }: Props) {
     try {
       await api.clockIn()
       setState('clear')
+      // Tell the sidebar ClockWidget right away — it otherwise only polls every 30s.
+      window.dispatchEvent(new Event('tracker:clock-changed'))
     } catch (e: any) {
       setError(e?.message ?? 'Clock-in failed — try again.')
     } finally {
