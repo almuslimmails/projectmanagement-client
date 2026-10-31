@@ -49,6 +49,10 @@ export default function Home() {
   // Assignable members for the ACTIVE board (server-filtered for restricted boards).
   const [projectMembers, setProjectMembers] = useState<Member[]>([])
   const [currentMemberId, _setCurrentMemberId] = useState<string | null>(null)
+  // The REAL signed-in account (from the JWT, never the act-as header) — the
+  // impersonation picker keys off this so an owner acting as a member can
+  // always switch back.
+  const [loginMemberId, setLoginMemberId] = useState<string | null>(null)
   const [activeProject, setActiveProject] = useState<Project | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
   const [states, setStates] = useState<State[]>([])
@@ -112,6 +116,7 @@ export default function Home() {
         // picker) is session-only — it must NOT persist across reloads, otherwise the owner
         // gets stuck acting as a member (dates disabled, etc.).
         const chosen = me?.id ?? null
+        setLoginMemberId(chosen)
         _setCurrentMemberId(chosen)
         setCurrentMemberId(chosen)
 
@@ -231,6 +236,7 @@ export default function Home() {
   }
 
   const currentMember = useMemo(() => members.find(m => m.id === currentMemberId) ?? null, [members, currentMemberId])
+  const loginMember = useMemo(() => members.find(m => m.id === loginMemberId) ?? null, [members, loginMemberId])
   const overdueCount = useMemo(() => issues.filter(i => isOverdue(i.due_date) && i.state?.group_type !== 'completed' && i.state?.group_type !== 'cancelled').length, [issues])
 
   // Whether the current member has any exam assigned — drives the Exams menu's
@@ -429,6 +435,7 @@ export default function Home() {
         activeProject={activeProject}
         activeView={view}
         currentMember={currentMember}
+        loginMember={loginMember}
         overdueCount={overdueCount}
         rolePermissions={rolePermissions}
         company={company}

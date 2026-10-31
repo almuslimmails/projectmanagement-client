@@ -37,6 +37,8 @@ interface Props {
   onCreateProject: () => void
   onCreateMember: () => void
   onSwitchUser: (memberId: string | null) => void
+  // The real signed-in account — impersonation never changes it.
+  loginMember?: Member | null
   onOpenWorkspaceSettings?: () => void
   onSignOut?: () => void
 }
@@ -75,7 +77,7 @@ const AI_CHILDREN: NavItem[] = [
 ]
 const ANSWER_KEY_ROLES = ['owner', 'admin', 'manager']
 
-export default function Sidebar({ workspace, projects, members, activeProject, activeView, currentMember, overdueCount, rolePermissions, company, canCreateBoard, examAssigned, onSelectProject, onSelectView, onCreateProject, onCreateMember, onSwitchUser, onOpenWorkspaceSettings, onSignOut }: Props) {
+export default function Sidebar({ workspace, projects, members, activeProject, activeView, currentMember, loginMember, overdueCount, rolePermissions, company, canCreateBoard, examAssigned, onSelectProject, onSelectView, onCreateProject, onCreateMember, onSwitchUser, onOpenWorkspaceSettings, onSignOut }: Props) {
   // Menu visibility is the hierarchy top-down: a feature must be ON for the
   // company AND granted to the member's role. Missing data defaults to
   // visible (safe fallback before company/permissions arrive).
@@ -205,15 +207,18 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
       {/* Time-tracking clock — visible to every signed-in member, all roles. */}
       {currentMember && <ClockWidget />}
 
-      {/* Owner-only impersonation picker — lets the workspace owner test the app as any member */}
-      {currentMember?.role === 'owner' && members.length > 0 && (
+      {/* Owner-only impersonation picker. Keyed off the REAL login, not the
+          impersonated member — otherwise picking a non-owner hid the picker
+          and left no way back. */}
+      {(loginMember ?? currentMember)?.role === 'owner' && members.length > 0 && (
         <div className="px-4 py-3 border-b border-black/20">
           <label className="text-[10px] uppercase tracking-widest text-white/50 font-semibold mb-1.5 block">
             Impersonate <span className="text-white/30 normal-case">(owner only)</span>
           </label>
-          <select value={currentMember?.id ?? ''} onChange={e => onSwitchUser(e.target.value || null)}
+          <select value={currentMember?.id ?? ''}
+            onChange={e => onSwitchUser(e.target.value || loginMember?.id || null)}
             className="w-full bg-black/20 text-white text-[13px] rounded-md px-2.5 py-1.5 border border-white/10 hover:bg-black/30 focus:outline-none focus:ring-1 focus:ring-white/30">
-            <option value="" className="bg-[#3F0E40]">— pick a user —</option>
+            <option value="" className="bg-[#3F0E40]">— back to yourself —</option>
             {members.map(m => (
               <option key={m.id} value={m.id} className="bg-[#3F0E40]">
                 {m.name} · {m.role}

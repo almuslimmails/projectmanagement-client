@@ -152,7 +152,13 @@ export const api = {
   },
 
   authMe: async () => {
-    const res = await fetch(`${TRACKER_API_BASE}/auth/me`, { headers: authHeaders() })
+    // Identify the REAL signed-in account: never send the act-as header here,
+    // or a persisted impersonation masquerades as the login and sticks across
+    // reloads with no way back.
+    const headers: Record<string, string> = {}
+    const token = getToken()
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const res = await fetch(`${TRACKER_API_BASE}/auth/me`, { headers })
     if (!res.ok) throw new Error('not signed in')
     return res.json()
   },
