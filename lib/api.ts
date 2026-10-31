@@ -184,6 +184,8 @@ export const api = {
   // attendance / clock-in
   getMySession: () => get('/attendance/me'),
   clockIn: () => post('/attendance/clock-in', {}),
+  getClockReport: (from?: string, to?: string) =>
+    get(`/attendance/clock-report${from && to ? `?from=${from}&to=${to}` : ''}`),
   clockOut: () => post('/attendance/clock-out', {}),
   toggleBreak: () => post('/attendance/break', {}),
   getAttendance: (date?: string) => get(`/attendance${date ? `?date=${date}` : ''}`),
