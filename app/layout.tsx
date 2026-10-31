@@ -25,6 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-color-mode="light"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full overflow-hidden">
