@@ -20,6 +20,7 @@ import AttendanceView from '@/components/attendance/AttendanceView'
 import ChatView from '@/components/chat/ChatView'
 import ProductTour, { shouldAutoShowTour } from '@/components/tour/ProductTour'
 import WelcomeSplash from '@/components/tour/WelcomeSplash'
+import ForceClockInGate from '@/components/attendance/ForceClockInGate'
 import AnnouncementTicker from '@/components/announcements/AnnouncementTicker'
 import AnnouncementsPage from '@/components/announcements/AnnouncementsPage'
 import AIDocView, { AI_DOCS } from '@/components/ai/AIDocView'
@@ -417,6 +418,8 @@ export default function Home() {
   return (
     <>
     <WelcomeSplash />
+    {/* Employees must clock in before the tracker opens; owners exempt. */}
+    <ForceClockInGate currentMember={currentMember} enabled={company?.features?.attendance !== false} />
     <AnnouncementTicker currentMember={currentMember} />
     <div className="flex h-screen overflow-hidden bg-[#F8F8F8]">
       <Sidebar
