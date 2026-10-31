@@ -235,20 +235,25 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
             </button>
           )}
         </div>
-        <div>
-          {projects.map(p => {
-            const isActive = activeProject?.id === p.id
-            return (
-              <button key={p.id} onClick={() => onSelectProject(p)}
-                className={`w-full flex items-center gap-2 px-4 py-1.5 text-[15px] transition-colors ${isActive ? 'bg-[#1164A3] text-white font-semibold' : 'text-white/75 hover:bg-white/10 hover:text-white'}`}>
-                <span className="text-[15px] leading-none w-4 text-center">{p.emoji}</span>
-                <span className="truncate">{p.name}</span>
-                <span className={`ml-auto text-[10px] font-mono ${isActive ? 'text-white/60' : 'text-white/35'}`}>{p.identifier}</span>
-              </button>
-            )
-          })}
-          {!projects.length && (
-            <p className="text-[11px] text-white/40 px-4 py-1">No projects yet</p>
+        {/* Board picker — a dropdown, so a long board list doesn't eat the sidebar. */}
+        <div className="px-4 pb-1">
+          {projects.length ? (
+            <select
+              value={activeProject?.id ?? ''}
+              onChange={e => {
+                const p = projects.find(x => x.id === e.target.value)
+                if (p) onSelectProject(p)
+              }}
+              className="w-full bg-black/20 text-white text-[14px] rounded-md px-2.5 py-1.5 border border-white/10 hover:bg-black/30 focus:outline-none focus:ring-1 focus:ring-white/30">
+              {!activeProject && <option value="" className="bg-[#3F0E40]">— pick a board —</option>}
+              {projects.map(p => (
+                <option key={p.id} value={p.id} className="bg-[#3F0E40]">
+                  {p.emoji} {p.name} · {p.identifier}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-[11px] text-white/40 py-1">No projects yet</p>
           )}
         </div>
       </div>
