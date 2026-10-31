@@ -118,4 +118,4 @@ export interface Conversation {
 }
 
 export interface Cycle { id: string; project_id: string; name: string; description: string; start_date: string | null; end_date: string | null; status: string; issues?: Issue[]; progress?: number; issue_count?: number }
-export interface Module { id: string; project_id: string; name: string; description: string; status: string; lead_id: string | null; lead?: Member; start_date: string | null; target_date: string | null; issues?: Issue[]; progress?: number; issue_count?: number }
+export interface Module { id: string; project_id: string; name: string; description: string; status: string; lead_id: string | null; lead?: Member; start_date: string | null; target_date: string | null; cycle_id?: string | null; milestone?: { id: string; name: string } | null; issues?: Issue[]; progress?: number; issue_count?: number }

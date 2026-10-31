@@ -43,6 +43,11 @@ function ModuleCard({ mod, onView }: { mod: Module; onView: () => void }) {
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${statusColor}`}>
               {mod.status.replace('_', ' ')}
             </span>
+            {mod.milestone && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-violet-100 text-violet-700 truncate">
+                🎯 {mod.milestone.name}
+              </span>
+            )}
           </div>
           <h3 className="font-semibold text-gray-900 truncate">{mod.name}</h3>
           {mod.description && <p className="text-sm text-gray-500 mt-0.5 truncate">{mod.description}</p>}
@@ -71,6 +76,9 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
   const [issues, setIssues] = useState<Issue[]>([])
   const [allIssues, setAllIssues] = useState<Issue[]>([])
   const [adding, setAdding] = useState(false)
+  // The epic's own board's milestones, for the link picker.
+  const [boardMilestones, setBoardMilestones] = useState<{ id: string; name: string }[]>([])
+  useEffect(() => { api.getCycles(project.id).then(setBoardMilestones).catch(() => setBoardMilestones([])) }, [project.id])
 
   // Edit form — same shape as the create form, populated from `mod`.
   const [editing, setEditing] = useState(false)
@@ -81,6 +89,7 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
     status: mod.status ?? 'backlog',
     start_date: mod.start_date ?? '',
     end_date: mod.target_date ?? '',
+    cycle_id: mod.cycle_id ?? '',
   })
   function beginEdit() {
     setForm({
@@ -89,6 +98,7 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
       status: mod.status ?? 'backlog',
       start_date: mod.start_date ?? '',
       end_date: mod.target_date ?? '',
+      cycle_id: mod.cycle_id ?? '',
     })
     setEditing(true)
   }
@@ -107,6 +117,7 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
         status: form.status,
         start_date: form.start_date || null,
         target_date: form.end_date || null,
+        cycle_id: form.cycle_id || null,
       })
       setMod(prev => ({ ...prev, ...updated }))
       setEditing(false)
@@ -158,6 +169,11 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${statusColor}`}>
                 {mod.status.replace('_', ' ')}
               </span>
+              {mod.milestone && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-violet-100 text-violet-700">
+                  🎯 {mod.milestone.name}
+                </span>
+              )}
             </div>
             <h2 className="font-semibold text-gray-900">{mod.name}</h2>
             {mod.description && <p className="text-sm text-gray-500">{mod.description}</p>}
@@ -231,6 +247,14 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
               </div>
               {dateError && <p className="text-[11px] text-red-600 mt-1">{dateError}</p>}
             </div>
+            <div>
+              <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide block mb-1">Milestone</label>
+              <select value={form.cycle_id} onChange={e => setForm(f => ({ ...f, cycle_id: e.target.value }))}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                <option value="">— none —</option>
+                {boardMilestones.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
             <div className="flex gap-2">
               <button onClick={save} disabled={!canSave || saving}
                 className="text-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-1.5 rounded-lg font-medium transition-colors">
@@ -295,8 +319,11 @@ export default function ModulesPage({ project, projects, currentMember, onClickI
   const [epics, setEpics] = useState<WorkspaceEpic[] | null>(null)
   const [selected, setSelected] = useState<WorkspaceEpic | null>(null)
   const [creating, setCreating] = useState(false)
-  const EMPTY_FORM = { name: '', description: '', status: 'backlog', start_date: '', end_date: '' }
+  const EMPTY_FORM = { name: '', description: '', status: 'backlog', start_date: '', end_date: '', cycle_id: '' }
   const [form, setForm] = useState(EMPTY_FORM)
+  // Active board's milestones for the create form's link picker.
+  const [boardMilestones, setBoardMilestones] = useState<{ id: string; name: string }[]>([])
+  useEffect(() => { api.getCycles(project.id).then(setBoardMilestones).catch(() => setBoardMilestones([])) }, [project.id])
 
   const nameError = form.name.trim() ? validateEpicName(form.name) : null
   const dateError = validateDateOrder(form.start_date, form.end_date)
@@ -322,7 +349,7 @@ export default function ModulesPage({ project, projects, currentMember, onClickI
   async function createModule() {
     if (!canCreate) return
     try {
-      await api.createModule(project.id, { name: form.name.trim(), description: form.description, status: form.status as any, start_date: form.start_date || undefined, target_date: form.end_date || undefined })
+      await api.createModule(project.id, { name: form.name.trim(), description: form.description, status: form.status as any, start_date: form.start_date || undefined, target_date: form.end_date || undefined, cycle_id: form.cycle_id || undefined })
     } catch (e: any) {
       alert(e?.message ?? 'Failed to create epic')
       return
@@ -370,6 +397,11 @@ export default function ModulesPage({ project, projects, currentMember, onClickI
                   <option value="paused">Paused</option>
                   <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
+                </select>
+                <select value={form.cycle_id} onChange={e => setForm(f => ({ ...f, cycle_id: e.target.value }))}
+                  className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                  <option value="">Milestone: none</option>
+                  {boardMilestones.map(c => <option key={c.id} value={c.id}>🎯 {c.name}</option>)}
                 </select>
               </div>
               <div>
