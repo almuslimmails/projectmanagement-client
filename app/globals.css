@@ -12,11 +12,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* The app is light-only — every component hardcodes light Tailwind colors.
+   Following the OS dark scheme here only flipped INHERITED colors, which made
+   typed text in form fields near-white on white. Pin the whole app light. */
+:root {
+  color-scheme: light;
 }
 
 body {
