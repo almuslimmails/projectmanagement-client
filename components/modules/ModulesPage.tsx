@@ -176,7 +176,8 @@ function ModuleDetail({ mod: initialMod, project, canManage, onClose, onClickIss
               )}
             </div>
             <h2 className="font-semibold text-gray-900">{mod.name}</h2>
-            {mod.description && <p className="text-sm text-gray-500">{mod.description}</p>}
+            {/* Long epic briefs keep their line breaks and scroll within the header. */}
+            {mod.description && <p className="text-sm text-gray-500 whitespace-pre-line max-h-44 overflow-y-auto pr-2">{mod.description}</p>}
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right w-32">
