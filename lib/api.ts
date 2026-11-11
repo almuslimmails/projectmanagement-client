@@ -105,6 +105,46 @@ const r = async (method: string, path: string, body?: object) => {
   }
   return res.json()
 }
+// Unauthenticated JSON POST to tracker-api for the sign-in steps. Failures
+// throw AuthError carrying the server's message, status and restart hint.
+export class AuthError extends Error {
+  constructor(message: string, public status: number, public restart = false, public retryAfter?: number) {
+    super(message)
+  }
+}
+interface AuthMember { id: string; name: string; email: string; role: string }
+interface AuthResponse {
+  token?: string; member?: AuthMember
+  mfa_required?: boolean; challenge_token?: string; email_hint?: string; expires_in?: number; resend_after?: number
+  error?: string; restart?: boolean; retry_after?: number
+}
+async function authPost(path: string, body: object, fallback: string): Promise<AuthResponse> {
+  let res: Response
+  try {
+    res = await fetch(`${TRACKER_API_BASE}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    throw new AuthError('Cannot reach the tracker server. Check your connection and try again.', 0)
+  }
+  const data: AuthResponse = await res.json().catch(() => ({}))
+  if (!res.ok) throw new AuthError(data.error ?? fallback, res.status, !!data.restart, data.retry_after)
+  return data
+}
+
+export type LoginResult =
+  | { mfaRequired: false; member: AuthMember }
+  | { mfaRequired: true; challengeToken: string; emailHint: string; expiresIn: number; resendAfter: number }
+
+// Readable message from an error thrown by r() (whose message is the raw
+// response body, usually {"error": "..."}).
+export function errorMessage(e: unknown, fallback = 'Something went wrong'): string {
+  const raw = e instanceof Error ? e.message : String(e ?? '')
+  try { return JSON.parse(raw).error ?? fallback } catch { return raw || fallback }
+}
+
 const get = (p: string) => r('GET', p)
 const post = (p: string, b: object) => r('POST', p, b)
 const patch = (p: string, b: object) => r('PATCH', p, b)
@@ -120,17 +160,34 @@ export const api = {
   getMe: () => get('/me'),   // legacy NextAuth-session lookup — unused after the JWT switch
 
   // ── JWT auth against tracker-api ──────────────────────────────────
-  login: async (email: string, password: string) => {
-    const res = await fetch(`${TRACKER_API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? 'Sign-in failed')
-    const { token, member } = await res.json()
-    setToken(token)
-    setCurrentMemberId(member.id)
-    return member
+  // With email verification on, the password step answers with a challenge
+  // instead of a token; verifyLoginCode() finishes the sign-in.
+  login: async (email: string, password: string): Promise<LoginResult> => {
+    const data = await authPost('/auth/login', { email, password }, 'Sign-in failed')
+    if (data.mfa_required) {
+      return {
+        mfaRequired: true,
+        challengeToken: data.challenge_token ?? '',
+        emailHint: data.email_hint ?? 'your email',
+        expiresIn: data.expires_in ?? 600,
+        resendAfter: data.resend_after ?? 60,
+      }
+    }
+    if (!data.token || !data.member) throw new AuthError('Sign-in failed', 500)
+    setToken(data.token)
+    setCurrentMemberId(data.member.id)
+    return { mfaRequired: false, member: data.member }
+  },
+  verifyLoginCode: async (challengeToken: string, code: string) => {
+    const data = await authPost('/auth/login/verify', { challenge_token: challengeToken, code }, 'Verification failed')
+    if (!data.token || !data.member) throw new AuthError('Verification failed', 500)
+    setToken(data.token)
+    setCurrentMemberId(data.member.id)
+    return data.member
+  },
+  resendLoginCode: async (challengeToken: string): Promise<{ resend_after: number }> => {
+    const data = await authPost('/auth/login/resend', { challenge_token: challengeToken }, 'Could not send a new code')
+    return { resend_after: data.resend_after ?? 60 }
   },
   // ── first-run setup wizard ────────────────────────────────────────
   getSetupStatus: async () => {
@@ -168,6 +225,12 @@ export const api = {
   getCompany: () => get('/company'),
   updateCompany: (data: Dict) => patch('/company', data),
   setCompanyFeatures: (features: Record<string, boolean>) => r('PUT', '/company/features', { features }),
+  // Email verification at sign-in: start emails the owner a code, confirm switches it on.
+  startCompanyTwoFactor: (emailDomain: string): Promise<{ challenge_token: string; email_hint: string; email_domain: string }> =>
+    post('/company/two-factor/start', { email_domain: emailDomain }),
+  confirmCompanyTwoFactor: (challengeToken: string, code: string) =>
+    post('/company/two-factor/confirm', { challenge_token: challengeToken, code }),
+  disableCompanyTwoFactor: () => post('/company/two-factor/disable', {}),
 
   // workspace
   getWorkspace: () => get('/workspace'),

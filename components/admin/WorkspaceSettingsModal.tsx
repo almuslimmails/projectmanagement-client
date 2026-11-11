@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Member, Role, Company } from '@/lib/types'
 import { api } from '@/lib/api'
 import { Avatar } from '@/components/ui/Avatar'
+import SignInSecurity from './SignInSecurity'
 
 interface Props {
   members: Member[]
@@ -65,7 +66,7 @@ export default function WorkspaceSettingsModal({ members, currentMember, company
 
         <div className="flex-1 overflow-y-auto p-6">
           {tab === 'company'
-            ? <CompanyTab company={company ?? null} isOwner={isOwner} busy={busy} run={run} onChanged={onCompanyChanged} />
+            ? <CompanyTab company={company ?? null} members={members} currentMember={currentMember} isOwner={isOwner} busy={busy} run={run} onChanged={onCompanyChanged} />
             : tab === 'members'
             ? <MembersTab members={members} isOwner={isOwner} busy={busy} run={run} onChanged={onMembersChanged} />
             : tab === 'roles'
@@ -86,8 +87,8 @@ export default function WorkspaceSettingsModal({ members, currentMember, company
 // role: a feature off here disappears for everyone, owner included, and the
 // API answers 403 on its routes. Hierarchy: Company → Roles → Board access → Cards.
 
-function CompanyTab({ company: fromPage, isOwner, busy, run, onChanged }: {
-  company: Company | null; isOwner: boolean; busy: boolean
+function CompanyTab({ company: fromPage, members, currentMember, isOwner, busy, run, onChanged }: {
+  company: Company | null; members: Member[]; currentMember: Member | null; isOwner: boolean; busy: boolean
   run: (fn: () => Promise<unknown>) => Promise<void>
   onChanged?: (c: Company) => void
 }) {
@@ -148,6 +149,10 @@ function CompanyTab({ company: fromPage, isOwner, busy, run, onChanged }: {
           )}
         </div>
       </div>
+
+      {/* Email verification at sign-in */}
+      <SignInSecurity company={company} members={members} currentMember={currentMember} isOwner={isOwner}
+        onChanged={c => { setCompany(c); onChanged?.(c) }} />
 
       {/* Hierarchy explainer */}
       <div className="border border-indigo-100 bg-indigo-50/40 rounded-xl px-4 py-3">
