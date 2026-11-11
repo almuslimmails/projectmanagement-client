@@ -16,6 +16,7 @@ interface Props {
 
 const ROLES: Role[] = ['owner', 'admin', 'manager', 'member', 'viewer']
 const MENU_OPTIONS: { id: string; label: string }[] = [
+  { id: 'procurement', label: 'Procurement' },
   { id: 'dashboard',   label: 'Dashboard' },
   { id: 'sprints',     label: 'Sprints' },
   { id: 'board',       label: 'Board' },

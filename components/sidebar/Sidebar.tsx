@@ -11,7 +11,7 @@ const STATUS_COLOR: Record<string, string> = {
   offline: 'bg-gray-500',
 }
 
-type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
+type View = 'procurement' | 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
   | 'ai-syllabus' | 'ai-workbook' | 'ai-dictionary' | 'ai-assessment' | 'ai-answer-key'
 
 interface Props {
@@ -94,6 +94,24 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
   ]
   const visibleReports = REPORTS_CHILDREN.filter(it => isAllowed(it.id))
   const chatAllowed = isAllowed('chat')
+
+  // Procurement — the task intake board apart from the projects. Processors
+  // (owner/admin/manager) get a badge with the number of New requests waiting.
+  const procurementAllowed = isAllowed('procurement')
+  const isProcessor = ['owner', 'admin', 'manager'].includes(currentMember?.role ?? '')
+  const [procurementNew, setProcurementNew] = useState(0)
+  useEffect(() => {
+    if (!procurementAllowed || !isProcessor) return
+    let alive = true
+    const refresh = () => api.getProcurementSummary()
+      .then(s => { if (alive) setProcurementNew(s.new ?? 0) })
+      .catch(() => { /* badge is best-effort */ })
+    refresh()
+    const t = setInterval(refresh, 60_000)
+    window.addEventListener('tracker:procurement-changed', refresh)
+    return () => { alive = false; clearInterval(t); window.removeEventListener('tracker:procurement-changed', refresh) }
+  }, [procurementAllowed, isProcessor, currentMember?.id])
+  const procurementBadge = procurementAllowed && isProcessor ? procurementNew : 0
 
   // AI docs group: gated by the single 'ai' menu id; the Answer Key child is
   // further restricted to privileged roles.
@@ -226,6 +244,23 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Procurement — workspace-level intake board, apart from the projects */}
+      {procurementAllowed && (
+        <div className="pt-3">
+          <button onClick={() => onSelectView('procurement')}
+            className={`w-full flex items-center gap-2.5 px-4 py-1.5 text-[15px] transition-colors ${activeView === 'procurement' ? 'bg-[#1164A3] text-white font-semibold' : 'text-white/75 hover:bg-white/10 hover:text-white'}`}>
+            <span className="shrink-0 opacity-90"><InboxIcon /></span>
+            <span>Procurement</span>
+            {procurementBadge > 0 && (
+              <span title={`${procurementBadge} new request${procurementBadge === 1 ? '' : 's'} waiting`}
+                className="ml-auto text-[11px] font-bold bg-[#E01E5A] text-white rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
+                {procurementBadge}
+              </span>
+            )}
+          </button>
         </div>
       )}
 
@@ -413,3 +448,4 @@ function AttendanceIcon() { return <svg className="w-4 h-4" fill="none" stroke="
 function ClockTrackerIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v6l4 2m4 4.5V21h-3.5M4 3.5L6.5 6M20 3.5L17.5 6M12 21a8 8 0 100-16 8 8 0 000 16z"/></svg> }
 function ChatIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 20l1.3-3.9A7.9 7.9 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> }
 function ReportsIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> }
+function InboxIcon() { return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4m16 0h-4.586a1 1 0 00-.707.293l-1.414 1.414a1 1 0 01-.707.293h-1.172a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 008.586 13H4"/></svg> }
