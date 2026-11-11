@@ -16,6 +16,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { PriorityIcon } from '@/components/ui/PriorityIcon'
 import RequestDetail from './RequestDetail'
 import NewRequestModal from './NewRequestModal'
+import RequestsIcon from './RequestsIcon'
 import { COLUMNS, PROCESSOR_ROLES, OPEN_STATUSES as OPEN, notifyProcurementChanged } from './shared'
 
 interface Props {
@@ -104,7 +105,7 @@ export default function ProcurementView({ currentMember, members, projects, onOp
       <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-gray-200 bg-white shrink-0">
         <div className="min-w-0">
           <h1 className="font-extrabold text-gray-900 text-[15px] leading-tight flex items-center gap-2">
-            <span aria-hidden>📥</span> Procurement
+            <span className="text-indigo-600"><RequestsIcon /></span> Requests
             <span className="text-[11px] font-mono text-gray-400 tracking-wider">{openCount} open</span>
           </h1>
           <p className="text-[11px] text-gray-500 mt-0.5">
