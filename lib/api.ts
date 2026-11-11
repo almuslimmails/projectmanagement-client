@@ -40,7 +40,7 @@ const TRACKER_API_BASE =
 // Next server can see — goes away when web login moves to JWT).
 const MIGRATED_PREFIXES = [
   '/announcements', '/dashboard', '/workspace', '/admin', '/projects',
-  '/attendance', '/chat', '/exams', '/company',
+  '/attendance', '/chat', '/exams', '/company', '/procurement',
 ]
 
 // Resolve a file/link URL coming from API data: external links pass through,
@@ -105,6 +105,13 @@ const r = async (method: string, path: string, body?: object) => {
   }
   return res.json()
 }
+// Readable message from an error thrown by r() (whose message is the raw
+// response body, usually {"error": "..."}).
+export function errorMessage(e: unknown, fallback = 'Something went wrong'): string {
+  const raw = e instanceof Error ? e.message : String(e ?? '')
+  try { return JSON.parse(raw).error ?? fallback } catch { return raw || fallback }
+}
+
 const get = (p: string) => r('GET', p)
 const post = (p: string, b: object) => r('POST', p, b)
 const patch = (p: string, b: object) => r('PATCH', p, b)
@@ -168,6 +175,24 @@ export const api = {
   getCompany: () => get('/company'),
   updateCompany: (data: Dict) => patch('/company', data),
   setCompanyFeatures: (features: Record<string, boolean>) => r('PUT', '/company/features', { features }),
+
+  // procurement — the task intake board apart from the project boards
+  getProcurementRequests: (opts: { status?: string; mine?: boolean } = {}) => {
+    const q = new URLSearchParams()
+    if (opts.status) q.set('status', opts.status)
+    if (opts.mine) q.set('mine', '1')
+    const qs = q.toString()
+    return get(`/procurement/requests${qs ? `?${qs}` : ''}`)
+  },
+  getProcurementSummary: (): Promise<{ new: number; review: number; accepted: number }> => get('/procurement/summary'),
+  getProcurementRequest: (rid: string) => get(`/procurement/requests/${rid}`),
+  createProcurementRequest: (data: Dict) => post('/procurement/requests', data),
+  updateProcurementRequest: (rid: string, data: Dict) => patch(`/procurement/requests/${rid}`, data),
+  routeProcurementRequest: (rid: string, data: Dict) => post(`/procurement/requests/${rid}/route`, data),
+  declineProcurementRequest: (rid: string, reason: string) => post(`/procurement/requests/${rid}/decline`, { reason }),
+  reopenProcurementRequest: (rid: string) => post(`/procurement/requests/${rid}/reopen`, {}),
+  commentOnProcurementRequest: (rid: string, body: string) => post(`/procurement/requests/${rid}/comments`, { body }),
+  deleteProcurementRequest: (rid: string) => del(`/procurement/requests/${rid}`),
 
   // workspace
   getWorkspace: () => get('/workspace'),

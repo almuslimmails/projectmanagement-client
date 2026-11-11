@@ -32,8 +32,9 @@ import CreateIssueModal from '@/components/issue/CreateIssueModal'
 import CreateProjectModal from '@/components/project/CreateProjectModal'
 import ProjectSettingsModal from '@/components/project/ProjectSettingsModal'
 import CreateMemberModal from '@/components/workspace/CreateMemberModal'
+import ProcurementView from '@/components/procurement/ProcurementView'
 
-type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
+type View = 'procurement' | 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
   | 'ai-syllabus' | 'ai-workbook' | 'ai-dictionary' | 'ai-assessment' | 'ai-answer-key'
 
 // Views where the project-header "New issue" button makes no sense.
@@ -247,10 +248,12 @@ export default function Home() {
     const allowed = rolePermissions?.[currentMember.role]
     if (!allowed) return
     const menuId = view.startsWith('ai-') ? 'ai' : view
-    if (allowed.includes(menuId)) return
+    // A company feature switched off counts as not allowed, too.
+    const featureOn = (id: string) => company?.features?.[id] !== false
+    if (allowed.includes(menuId) && featureOn(menuId)) return
     const VIEWS = ['board', 'dashboard', 'list', 'sprints', 'wiki', 'chat']
-    setView((VIEWS.find(v => allowed.includes(v)) ?? 'board') as View)
-  }, [currentMember, rolePermissions, view])
+    setView((VIEWS.find(v => allowed.includes(v) && featureOn(v)) ?? 'board') as View)
+  }, [currentMember, rolePermissions, view, company])
   const overdueCount = useMemo(() => issues.filter(i => isOverdue(i.due_date) && i.state?.group_type !== 'completed' && i.state?.group_type !== 'cancelled').length, [issues])
 
   // Whether the current member has any exam assigned — drives the Exams menu's
@@ -272,6 +275,16 @@ export default function Home() {
   // Open the issue detail panel with the FULL hydrated issue (incl. sub_issues),
   // not whatever the list view happens to hold. Without this, sub-issues don't
   // appear in the detail panel when an issue is opened from Board/List/etc.
+  // Procurement → "Open card": jump to the routed card on its board.
+  async function openRoutedCard(projectId: string, issueId: string) {
+    const p = projects.find(x => x.id === projectId)
+    if (!p) { alert('You do not have access to that board.'); return }
+    if (activeProject?.id !== p.id) await loadProject(p)
+    setView('board')
+    const full = await api.getIssue(projectId, issueId).catch(() => null)
+    if (full) setSelectedIssue(full)
+  }
+
   async function openIssueDetail(issue: Issue) {
     if (!activeProject) return
     // Cross-board pages (workspace Epics) hand over issues from other boards:
@@ -466,7 +479,27 @@ export default function Home() {
 
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        {activeProject ? (
+        {view === 'procurement' ? (
+          // Procurement lives apart from the projects: it renders with or
+          // without an active board, so members with no board can still raise requests.
+          <ProcurementView
+            currentMember={currentMember}
+            members={members}
+            projects={projects}
+            onOpenCard={openRoutedCard}
+            header={
+              <header className="flex items-center gap-3 px-5 py-2 border-b border-gray-200 bg-white shrink-0">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Workspace</span>
+                <div className="ml-auto">
+                  <HeaderUserStrip
+                    currentMember={currentMember}
+                    onSignOut={() => { api.logout(); window.location.href = '/sign-in' }}
+                  />
+                </div>
+              </header>
+            }
+          />
+        ) : activeProject ? (
           <>
             {/* Top bar — Slack channel-header style */}
             <header className="flex items-center gap-3 px-5 py-3 border-b border-gray-200 bg-white shrink-0">

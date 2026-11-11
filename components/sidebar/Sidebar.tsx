@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import type { Workspace, Project, Member, Company } from '@/lib/types'
 import { Avatar } from '@/components/ui/Avatar'
 import ClockWidget from './ClockWidget'
+import RequestsIcon from '@/components/procurement/RequestsIcon'
 import { api } from '@/lib/api'
 
 const STATUS_COLOR: Record<string, string> = {
@@ -11,7 +12,7 @@ const STATUS_COLOR: Record<string, string> = {
   offline: 'bg-gray-500',
 }
 
-type View = 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
+type View = 'procurement' | 'dashboard' | 'sprints' | 'board' | 'list' | 'spreadsheet' | 'gantt' | 'cycles' | 'modules' | 'wiki' | 'attendance' | 'clock' | 'chat' | 'announcements' | 'exams'
   | 'ai-syllabus' | 'ai-workbook' | 'ai-dictionary' | 'ai-assessment' | 'ai-answer-key'
 
 interface Props {
@@ -94,6 +95,24 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
   ]
   const visibleReports = REPORTS_CHILDREN.filter(it => isAllowed(it.id))
   const chatAllowed = isAllowed('chat')
+
+  // Requests (internal id 'procurement') — the task intake board apart from the projects. Processors
+  // (owner/admin/manager) get a badge with the number of New requests waiting.
+  const procurementAllowed = isAllowed('procurement')
+  const isProcessor = ['owner', 'admin', 'manager'].includes(currentMember?.role ?? '')
+  const [procurementNew, setProcurementNew] = useState(0)
+  useEffect(() => {
+    if (!procurementAllowed || !isProcessor) return
+    let alive = true
+    const refresh = () => api.getProcurementSummary()
+      .then(s => { if (alive) setProcurementNew(s.new ?? 0) })
+      .catch(() => { /* badge is best-effort */ })
+    refresh()
+    const t = setInterval(refresh, 60_000)
+    window.addEventListener('tracker:procurement-changed', refresh)
+    return () => { alive = false; clearInterval(t); window.removeEventListener('tracker:procurement-changed', refresh) }
+  }, [procurementAllowed, isProcessor, currentMember?.id])
+  const procurementBadge = procurementAllowed && isProcessor ? procurementNew : 0
 
   // AI docs group: gated by the single 'ai' menu id; the Answer Key child is
   // further restricted to privileged roles.
@@ -226,6 +245,23 @@ export default function Sidebar({ workspace, projects, members, activeProject, a
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Requests (internal id 'procurement') — workspace-level intake board, apart from the projects */}
+      {procurementAllowed && (
+        <div className="pt-3">
+          <button onClick={() => onSelectView('procurement')}
+            className={`w-full flex items-center gap-2.5 px-4 py-1.5 text-[15px] transition-colors ${activeView === 'procurement' ? 'bg-[#1164A3] text-white font-semibold' : 'text-white/75 hover:bg-white/10 hover:text-white'}`}>
+            <span className="shrink-0 opacity-90"><RequestsIcon /></span>
+            <span>Requests</span>
+            {procurementBadge > 0 && (
+              <span title={`${procurementBadge} new request${procurementBadge === 1 ? '' : 's'} waiting`}
+                className="ml-auto text-[11px] font-bold bg-[#E01E5A] text-white rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
+                {procurementBadge}
+              </span>
+            )}
+          </button>
         </div>
       )}
 
