@@ -40,7 +40,7 @@ const TRACKER_API_BASE =
 // Next server can see — goes away when web login moves to JWT).
 const MIGRATED_PREFIXES = [
   '/announcements', '/dashboard', '/workspace', '/admin', '/projects',
-  '/attendance', '/chat', '/exams', '/company',
+  '/attendance', '/chat', '/exams', '/company', '/procurement',
 ]
 
 // Resolve a file/link URL coming from API data: external links pass through,
@@ -231,6 +231,24 @@ export const api = {
   confirmCompanyTwoFactor: (challengeToken: string, code: string) =>
     post('/company/two-factor/confirm', { challenge_token: challengeToken, code }),
   disableCompanyTwoFactor: () => post('/company/two-factor/disable', {}),
+
+  // procurement — the task intake board apart from the project boards
+  getProcurementRequests: (opts: { status?: string; mine?: boolean } = {}) => {
+    const q = new URLSearchParams()
+    if (opts.status) q.set('status', opts.status)
+    if (opts.mine) q.set('mine', '1')
+    const qs = q.toString()
+    return get(`/procurement/requests${qs ? `?${qs}` : ''}`)
+  },
+  getProcurementSummary: (): Promise<{ new: number; review: number; accepted: number }> => get('/procurement/summary'),
+  getProcurementRequest: (rid: string) => get(`/procurement/requests/${rid}`),
+  createProcurementRequest: (data: Dict) => post('/procurement/requests', data),
+  updateProcurementRequest: (rid: string, data: Dict) => patch(`/procurement/requests/${rid}`, data),
+  routeProcurementRequest: (rid: string, data: Dict) => post(`/procurement/requests/${rid}/route`, data),
+  declineProcurementRequest: (rid: string, reason: string) => post(`/procurement/requests/${rid}/decline`, { reason }),
+  reopenProcurementRequest: (rid: string) => post(`/procurement/requests/${rid}/reopen`, {}),
+  commentOnProcurementRequest: (rid: string, body: string) => post(`/procurement/requests/${rid}/comments`, { body }),
+  deleteProcurementRequest: (rid: string) => del(`/procurement/requests/${rid}`),
 
   // workspace
   getWorkspace: () => get('/workspace'),

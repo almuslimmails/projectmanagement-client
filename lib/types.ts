@@ -121,3 +121,33 @@ export interface Conversation {
 
 export interface Cycle { id: string; project_id: string; name: string; description: string; start_date: string | null; end_date: string | null; status: string; issues?: Issue[]; progress?: number; issue_count?: number }
 export interface Module { id: string; project_id: string; name: string; description: string; status: string; lead_id: string | null; lead?: Member; start_date: string | null; target_date: string | null; cycle_id?: string | null; milestone?: { id: string; name: string } | null; issues?: Issue[]; progress?: number; issue_count?: number }
+
+// ── Procurement (task intake board, apart from the project boards) ───────────
+export type ProcurementStatus = 'new' | 'review' | 'accepted' | 'routed' | 'declined'
+export type ProcurementType = 'task' | 'issue' | 'enhancement'
+export interface ProcurementRef { id: string; name: string }
+export interface ProcurementBoardRef { id: string; name: string; identifier: string; emoji: string }
+export interface ProcurementEvent {
+  id: string
+  kind: 'created' | 'status' | 'edited' | 'handler' | 'routed' | 'declined' | 'reopened' | 'comment'
+  body: string
+  created_at: string
+  actor: ProcurementRef | null
+}
+export interface ProcurementRequest {
+  id: string; code: string; seq: number
+  title: string; description: string
+  status: ProcurementStatus; type: ProcurementType; priority: Priority
+  needed_by: string | null
+  requester: ProcurementRef | null
+  handler: ProcurementRef | null
+  suggested_project: ProcurementBoardRef | null
+  routed_project: ProcurementBoardRef | null
+  routed_issue: { id: string; project_id: string; code: string } | null
+  decline_reason: string
+  processed_by: ProcurementRef | null
+  processed_at: string | null
+  comment_count: number
+  created_at: string; updated_at: string
+  events?: ProcurementEvent[]
+}
