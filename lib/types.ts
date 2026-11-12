@@ -13,8 +13,10 @@ export interface Company {
   id: string; workspace_id: string; name: string; created_at: string
   features: Record<string, boolean>
   catalog: { id: string; label: string }[]
+  // Email verification at sign-in. `enabled` is the effective state.
+  two_factor?: { enabled: boolean; email_domain: string; mail_configured: boolean; disabled_by_server: boolean }
 }
-export interface Member { id: string; workspace_id: string; name: string; email: string; avatar: string; role: Role }
+export interface Member { id: string; workspace_id: string; name: string; email: string; avatar: string; role: Role; is_agent?: number }
 export interface Project { id: string; workspace_id: string; name: string; identifier: string; description: string; emoji: string; created_at: string }
 export interface State { id: string; project_id: string; name: string; color: string; group_type: StateGroup; position: number; is_default: number }
 export interface Label { id: string; project_id: string; name: string; color: string }
