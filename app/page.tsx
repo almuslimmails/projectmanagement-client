@@ -91,20 +91,21 @@ export default function Home() {
   useEffect(() => {
     async function init() {
       try {
-        let ws = await api.getWorkspace()
-        if (!ws) {
-          ws = await api.createWorkspace({ name: 'My Workspace' })
-        }
-        setWorkspace(ws)
-
-        // JWT session → member identity. No token (or a dead one) bounces to
-        // sign-in; middleware normally catches this first via the cookie.
+        // JWT session → member identity first: every other read needs a valid
+        // token. No token (or a dead one) bounces to sign-in; middleware
+        // normally catches this first via the cookie.
         const me: any = await api.authMe().catch(() => null)
         if (!me) {
           api.logout()
           window.location.href = '/sign-in'
           return
         }
+
+        let ws = await api.getWorkspace()
+        if (!ws) {
+          ws = await api.createWorkspace({ name: 'My Workspace' })
+        }
+        setWorkspace(ws)
         const [projs, mems, perms, comp] = await Promise.all([
           api.getProjects(), api.getMembers(), api.getRolePermissions(),
           api.getCompany().catch(() => null),
@@ -247,7 +248,9 @@ export default function Home() {
     if (!currentMember) return
     const allowed = rolePermissions?.[currentMember.role]
     if (!allowed) return
-    const menuId = view.startsWith('ai-') ? 'ai' : view
+    // Exams and the AI docs all live under the 'ai' menu (there is no 'exams'
+    // menu id), so they share its permission.
+    const menuId = view.startsWith('ai-') || view === 'exams' ? 'ai' : view
     // A company feature switched off counts as not allowed, too.
     const featureOn = (id: string) => company?.features?.[id] !== false
     if (allowed.includes(menuId) && featureOn(menuId)) return
